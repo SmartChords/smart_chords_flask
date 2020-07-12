@@ -7,6 +7,13 @@ class Config(object):
     TESTING = False
     CSRF_ENABLED = True
     SECRET_KEY = 'todo-change-this'
+    IMAGE_UPLOADS = './static/img/uploads'
+    ALLOWED_IMAGE_EXTENSIONS = ["JPEG", "JPG", "PNG"]
+    MAIL_SERVER = "smtp.gmail.com"
+    MAIL_PORT = 465
+    MAIL_USE_SSL = True
+    MAIL_USERNAME = 'contact@example.com'
+    MAIL_PASSWORD = 'your-password'
 
 
 class ProductionConfig(Config):
@@ -16,6 +23,7 @@ class ProductionConfig(Config):
 class StagingConfig(Config):
     DEVELOPMENT = True
     DEBUG = True
+
 
 
 class DevelopmentConfig(Config):
