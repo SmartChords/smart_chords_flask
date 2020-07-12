@@ -28,6 +28,13 @@
                 <a href="{{ url_for('help') }}">Help/FAQ</a>
               </li>
             </ul>
+            {% if download %}
+              <ul class="nav flex-column list-group download-link">
+                <li class="nav-item list-group-item list-group-item-action">
+                  <a href="{{ url_for('display_download', download=download) }}" download>Download File Here</a>
+                </li>
+              </ul>
+            {% endif %}
           </nav>
           <!-- end navbar -->
 

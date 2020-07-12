@@ -63,8 +63,12 @@ def allowed_image(filename):
 
 
 app.route('/display/<filename>')
-def display_image(filename):
+def display_upload(filename):
 	return redirect(url_for('static', filename='img/uploads/' + filename), code=301)
+
+app.route('/display/<download>')
+def display_download(download):
+	return redirect(url_for('static', download='img/download/' + download), code=301)
 
 @app.route('/preview', methods=['GET', 'POST'])
 def preview():
@@ -91,9 +95,13 @@ def contact():
 def help():
     return render_template('help.html')
 
-@app.route('/load.html')
+@app.route('/loading')
 def load():
     return render_template('load.html')
+
+@app.route('/annotated')
+def annotated():
+    return render_template('annotated.html')
 
 if __name__ == '__main__':
     app.run()
