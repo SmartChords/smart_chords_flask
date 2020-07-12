@@ -1,0 +1,156 @@
+* {
+  margin: 0;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+#main {
+  min-height: 100%;
+  margin-bottom: -82px;
+}
+
+.header {
+  background-image: url('../img/music_notes.jpeg');
+  margin-bottom: 0px;
+}
+
+#main:after {
+  content: "";
+  display: block;
+}
+#footer, #main:after {
+  height: 82px;
+}
+#footer {
+  background: lightgrey;
+}
+
+.nav-item a {
+  color: black;
+}
+
+
+#fileName {
+  padding-bottom: 8px;
+  word-wrap: normal;
+}
+
+.preview-text, .buttons-list {
+  padding: 7px;
+}
+
+.button-row span {
+  margin: auto;
+}
+
+.loader {
+  margin: auto;
+  border: 25px solid #f3f3f3;
+  border-radius: 50%;
+  border-top: 25px solid darkgrey;
+  width: 200px;
+  height: 200px;
+  -webkit-animation: spin 2s linear infinite; /* Safari */
+  animation: spin 2s linear infinite;
+}
+
+.download-link {
+  margin-top: 10px;
+  border: 2px solid #3366cc
+}
+
+.image-row img {
+  margin: auto;
+  border: 1px solid #c1c1c1;
+  margin-bottom: 20px;
+}
+
+/* Safari */
+@-webkit-keyframes spin {
+  0% { -webkit-transform: rotate(0deg); }
+  100% { -webkit-transform: rotate(360deg); }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.contactFrm {
+  border: 2px solid black;
+  padding: 10px;
+  margin-bottom: 15px;
+}
+.contactFrm h4 {
+    font-size: 1em;
+    color: #252525;
+    margin-bottom: 0.5em;
+    /* font-weight: 300; */
+    letter-spacing: 1px;
+}
+.contactFrm input[type="text"], .contactFrm input[type="email"] {
+    width: 92%;
+    color: black;
+    background: #fff;
+    outline: none;
+    font-size: 0.9em;
+    padding: .7em 1em;
+    border: 1px solid black;
+    -webkit-appearance: none;
+    display: block;
+    margin-bottom: 1.2em;
+}
+.contactFrm textarea {
+    resize: none;
+    width: 93.5%;
+    background: #fff;
+    color: black;
+    font-size: 0.9em;
+    outline: none;
+    padding: .6em 1em;
+    border: 1px solid black;
+    min-height: 10em;
+    -webkit-appearance: none;
+}
+.contactFrm input[type="submit"] {
+    outline: none;
+    color: #FFFFFF;
+    padding: 0.5em 0;
+    font-size: 1em;
+    margin: 1em 0 0 0;
+    -webkit-appearance: none;
+    background: black;
+    transition: 0.5s all;
+    border: 2px solid black;
+    -webkit-transition: 0.5s all;
+    transition: 0.5s all;
+    -moz-transition: 0.5s all;
+    width: 47%;
+    cursor: pointer;
+}
+.contactFrm input[type="submit"]:hover {
+    background: none;
+    color: black;
+} */
+
+
+#footer {
+    clear:both;
+    margin:auto;
+    height: 19px;
+    text-align:center;
+    height: 40px;
+}
+
+#footer_hr {
+    display: block;
+    border-style: inset;
+    border-width: 1px;
+    position:relative;
+    min-width:960px;
+    max-width:1200px;
+    margin:auto;
+}
