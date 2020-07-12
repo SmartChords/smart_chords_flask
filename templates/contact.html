@@ -1,46 +1,48 @@
 {% extends "layout.html" %}
 
 {% block content %}
-  <h2>Contact</h2>
+  <div class="col-sm-1"></div>
+  <div class="col-sm-6">
+    <h2 class="text-center">Contact Us</h2>
+    {% if success %}
+      <div class="text-center alert alert-success" role="alert">Thank you for your message. We'll get back to you shortly.</div>
 
-  {% if success %}
-    <p>Thank you for your message. We'll get back to you shortly.</p>
+    {% else %}
 
-  {% else %}
+      {% for message in form.name.errors %}
+        <div class="alert alert-danger" role="alert">{{ message }}</div>
+      {% endfor %}
 
-    {% for message in form.name.errors %}
-      <div class="flash">{{ message }}</div>
-    {% endfor %}
+      {% for message in form.email.errors %}
+        <div class="alert alert-danger" role="alert">{{ message }}</div>
+      {% endfor %}
 
-    {% for message in form.email.errors %}
-      <div class="flash">{{ message }}</div>
-    {% endfor %}
+      {% for message in form.subject.errors %}
+        <div class="alert alert-danger" role="alert">{{ message }}</div>
+      {% endfor %}
 
-    {% for message in form.subject.errors %}
-      <div class="flash">{{ message }}</div>
-    {% endfor %}
+      {% for message in form.message.errors %}
+        <div class="alert alert-danger" role="alert">{{ message }}</div>
+      {% endfor %}
+      <div class="contactFrm">
+        <form action="{{ url_for('contact') }}" method='POST'>
+          {{ form.hidden_tag() }}
 
-    {% for message in form.message.errors %}
-      <div class="flash">{{ message }}</div>
-    {% endfor %}
+          {{ form.name.label }}
+          {{ form.name }}
 
-    <form action="{{ url_for('contact') }}" method=post>
-      {{ form.hidden_tag() }}
+          {{ form.email.label }}
+          {{ form.email }}
 
-      {{ form.name.label }}
-      {{ form.name }}
+          {{ form.subject.label }}
+          {{ form.subject }}
 
-      {{ form.email.label }}
-      {{ form.email }}
+          {{ form.message.label }}
+          {{ form.message }}
 
-      {{ form.subject.label }}
-      {{ form.subject }}
-
-      {{ form.message.label }}
-      {{ form.message }}
-
-      {{ form.submit }}
-    </form>
-
-  {% endif %}
+          {{ form.submit }}
+        </form>
+      </div>
+    {% endif %}
+  </div>
 {% endblock %}
