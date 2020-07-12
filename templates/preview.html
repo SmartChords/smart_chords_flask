@@ -1,0 +1,23 @@
+{% extends "layout.html" %}
+
+{% block content %}
+  <div class="col-sm-1"></div>
+  <div class="col-sm-6">
+    <h2 class="text-center">Preview</h2>
+    <div class="row button-row">
+      <span class="preview-text">Would you like to transcribe this music?</span>
+      <!-- add form here with hidden input fields with image data and submit to send data to ML model.  -->
+      <span class="buttons-list">
+        <a href="{{ url_for('load') }}" type="button" class="btn btn-sm btn-secondary">Submit</a>
+        <a href="{{ url_for('index') }}" type="button" class="btn btn-sm btn-light">Cancel</a>
+      </span>
+    </div>
+
+      <!-- Get the currently stored filename to display to the user for preview. -->
+      {% if filename %}
+        <div class="row image-row">
+      		<img src="{{ url_for('display_image', filename=filename) }}">
+      	</div>
+      {% endif %}
+  </div>
+{% endblock %}
