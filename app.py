@@ -207,7 +207,7 @@ def predict():
                 notes.append(i)
             if i[0:5] == "note-":
                 notes.append(i.split("-")[1])
-            if i == 'barline'
+            if i == 'BAR':
                 notes.append(i)
 
         # build_model_input(notes)
