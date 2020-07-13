@@ -35,15 +35,12 @@ X = data.drop(['chord'], axis = 1)
 X = np.array(X)
 Y = data['chord']
 
-# Transform name species into numerical values
+# Transform different chord options into numerical values
 encoder = LabelEncoder()
 encoder.fit(Y)
 Y = encoder.transform(Y)
 Y = np_utils.to_categorical(Y)
 
-]
-
-# input_dim = len(data.columns) - 1
 
 def create_model():
   model = keras.Sequential([

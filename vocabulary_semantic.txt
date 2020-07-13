@@ -1,4 +1,4 @@
-barline
+BAR
 clef-C1
 clef-C2
 clef-C3
