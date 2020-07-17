@@ -1,0 +1,23 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30309.148
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "smart_chords_flask1", "smart_chords_flask1.pyproj", "{21A243E7-2A95-4D37-B3D7-A21BDF2D0AC6}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{21A243E7-2A95-4D37-B3D7-A21BDF2D0AC6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{21A243E7-2A95-4D37-B3D7-A21BDF2D0AC6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {C52DFF58-B376-4919-8FEE-826755DF08A5}
+	EndGlobalSection
+EndGlobal

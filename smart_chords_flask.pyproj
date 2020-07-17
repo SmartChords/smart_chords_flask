@@ -1,0 +1,53 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{8ed7ffa0-03a1-4194-8693-8e9a2cc4a8f3}</ProjectGuid>
+    <ProjectHome />
+    <StartupFile>app.py</StartupFile>
+    <SearchPath />
+    <WorkingDirectory>.</WorkingDirectory>
+    <OutputPath>.</OutputPath>
+    <ProjectTypeGuids>{888888a0-9f3d-457c-b088-3a5042f75d52}</ProjectTypeGuids>
+    <LaunchProvider>Standard Python launcher</LaunchProvider>
+    <InterpreterId />
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'" />
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'" />
+  <PropertyGroup>
+    <VisualStudioVersion Condition=" '$(VisualStudioVersion)' == '' ">10.0</VisualStudioVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include="requirements.txt" />
+    <Content Include="runtime.txt" />
+    <Content Include="static\css\main.css" />
+    <Content Include="static\img\uploads\110002955-1_69_1_copy.png" />
+    <Content Include="static\js\main.js" />
+    <Content Include="templates\annotated.html" />
+    <Content Include="templates\contact.html" />
+    <Content Include="templates\help.html" />
+    <Content Include="templates\index.html" />
+    <Content Include="templates\layout.html" />
+    <Content Include="templates\load.html" />
+    <Content Include="templates\preview.html" />
+    <Content Include="vocabulary_semantic.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="app.py" />
+    <Compile Include="chord_model_training.py" />
+    <Compile Include="config.py" />
+    <Compile Include="forms.py" />
+    <Compile Include="image_processor.py" />
+    <Compile Include="notes.py" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="static\" />
+    <Folder Include="static\css" />
+    <Folder Include="static\img\" />
+    <Folder Include="static\img\uploads" />
+    <Folder Include="static\js" />
+    <Folder Include="templates" />
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
+</Project>

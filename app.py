@@ -19,7 +19,8 @@ from PIL import ImageDraw
 # mail = Mail()
 
 app = Flask(__name__)
-app.config.from_object(os.environ['APP_SETTINGS'])
+app.config.from_object('config.Config')
+#app.config.from_object(os.environ['APP_SETTINGS'])
 app.secret_key = 'development key'
 
 #
@@ -39,10 +40,9 @@ def index():
             return redirect(request.url)
 
         if image and allowed_image(image.filename):
-            filename = secure_filename(image.filename)
-            image.save(os.path.join(app.config["IMAGE_UPLOADS"], filename))
-
-            return render_template('preview.html', filename=filename)
+            file_name = secure_filename(image.filename)
+            image.save(os.path.join(app.config["IMAGE_UPLOADS"], file_name))
+            return render_template('preview.html', filename=file_name)
         else:
             flash("Incorrect file type")
             return redirect(request.url)
@@ -58,6 +58,7 @@ def allowed_image(filename):
         return False
 
     ext = filename.rsplit(".", 1)[1]
+
     if ext.upper() in app.config["ALLOWED_IMAGE_EXTENSIONS"]:
         return True
     else:
