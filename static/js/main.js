@@ -8,7 +8,6 @@ function addFileName() {
   }
 }
 
-// var loadButton = document.querySelector('#submit-preview-button');
 function sendToPreview() {
   event.preventDefault();
   var form = document.getElementById('preview-image-form');

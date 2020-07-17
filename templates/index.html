@@ -12,14 +12,13 @@
       <label for="fileToUpload">Select image to upload:</label>
       <div class="input-group mb-3">
         <div class="custom-file" id="file-js">
-          <input type="file" name="fileToUpload" class="custom-file-input" id="fileToUpload">
+          <input type="file" name="fileToUpload" class="custom-file-input" id="fileToUpload" onchange="addFileName()">
           <label class="text-nowrap custom-file-label" for="inputGroupFile02" id="fileName" aria-describedby="inputGroupFileAddon02">Choose file</label>
         </div>
         <div class="input-group-append">
           <input type="submit" class="input-group-text" name="submit" value="Upload" id="uploadButton">
         </div>
       </div>
-      <script src="{{ url_for('static', filename='js/main.js') }}"> </script>
     </form>
   </div>
 {% endblock %}
