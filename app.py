@@ -19,7 +19,7 @@ from PIL import ImageDraw
 # mail = Mail()
 
 app = Flask(__name__)
-app.config.from_object(os.environ['APP_SETTINGS'])
+# app.config.from_object(os.environ['APP_SETTINGS'])
 app.secret_key = 'development key'
 
 #
