@@ -54,6 +54,11 @@ body {
   margin: auto;
 }
 
+#loading-block {
+  margin: auto;
+
+}
+
 .loader {
   margin: auto;
   border: 25px solid #f3f3f3;
