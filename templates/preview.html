@@ -16,7 +16,7 @@
       <!-- Get the currently stored filename to display to the user for preview. -->
       {% if filename %}
         <div class="row image-row">
-      		<img src="{{ url_for('display_image', filename=filename) }}">
+      		<img src="{{ url_for('display_upload', filename=filename) }}">
       	</div>
       {% endif %}
   </div>
