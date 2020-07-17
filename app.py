@@ -19,8 +19,10 @@ from PIL import ImageDraw
 # mail = Mail()
 
 app = Flask(__name__)
-app.config.from_object(os.environ['APP_SETTINGS'])
-app.secret_key = 'development key'
+app.config.from_object('config.Config')
+# app.config.from_object(os.environ['APP_SETTINGS'])
+
+# app.secret_key = 'development key'
 
 #
 # mail.init_app(app)
@@ -31,11 +33,13 @@ def index():
     if request.method == 'POST':
         if 'fileToUpload' not in request.files:
             flash("No file to upload")
+            print("No files")
             return redirect(request.url)
 
         image = request.files['fileToUpload']
         if image.filename == "":
             flash("No file to upload")
+            print("No files")
             return redirect(request.url)
 
         if image and allowed_image(image.filename):
@@ -47,7 +51,6 @@ def index():
             flash("Incorrect file type")
             return redirect(request.url)
 
-        # return render_template("preview.html", filename=filename)
 
     else:
         return render_template('index.html')
@@ -66,15 +69,16 @@ def allowed_image(filename):
 
 @app.route('/upload/<filename>')
 def display_upload(filename):
-	return redirect(url_for('static', filename='img/uploads/' + filename), code=301)
+	return send_from_directory(app.config['IMAGE_UPLOADS'], filename)
 
 @app.route('/download/<download>')
 def display_download(download):
 	return redirect(url_for('static', download='img/download/' + download), code=301)
 
+
 @app.route('/preview', methods=['GET'])
-def preview():
-    return render_template("preview.html")
+def preview(filename):
+    return render_template("preview.html", filename=filename)
 
 
 @app.route('/loading')
