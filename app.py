@@ -22,9 +22,6 @@ app = Flask(__name__)
 app.config.from_object('config.Config')
 # app.config.from_object(os.environ['APP_SETTINGS'])
 
-# app.secret_key = 'development key'
-
-#
 # mail.init_app(app)
 
 
@@ -33,13 +30,11 @@ def index():
     if request.method == 'POST':
         if 'fileToUpload' not in request.files:
             flash("No file to upload")
-            print("No files")
             return redirect(request.url)
 
         image = request.files['fileToUpload']
         if image.filename == "":
             flash("No file to upload")
-            print("No files")
             return redirect(request.url)
 
         if image and allowed_image(image.filename):
