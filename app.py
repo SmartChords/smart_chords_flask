@@ -167,7 +167,7 @@ decoded, _ = tf.nn.ctc_greedy_decoder(logits, seq_len)
 def send_img(filename):
     return send_from_directory(app.config['IMAGE_UPLOADS'], filename)
 
-@app.route('/predict', methods=['POST'])
+@app.route('/predict', methods=['GET', 'POST'])
 def predict():
     if request.method == 'POST':        
     
@@ -218,9 +218,9 @@ def predict():
         chordPad = 30
         framePad = 25
             
-        chordA = Image.open("img/A-Chord.png").convert('L')
-        chordG = Image.open("img/G-Chord.png").convert('L')
-        frame = Image.open("img/Frame-1.png").convert('L')        
+        chordA = Image.open("/img/A-Chord.png").convert('L')
+        chordG = Image.open("/img/G-Chord.png").convert('L')
+        frame = Image.open("/img/Frame-1.png").convert('L')        
         
         aImgWidth = 907
         aImgHeight = 900
@@ -265,6 +265,36 @@ def predict():
         #layer.save("static/img/download/annotated.png")
         #return render_template('annotated.html')
         """
+    else:
+        """
+        frames = 4
+        chordPad = 30
+        framePad = 25
+            
+        chordA = Image.open("../img/A-Chord.png").convert('L')
+        chordG = Image.open("../img/G-Chord.png").convert('L')
+        frame = Image.open("../img/Frame-1.png").convert('L')        
+        
+        aImgWidth = 907
+        aImgHeight = 900
+        
+        # Create the ne wimage with the chord image height, frame height and padding.
+        aImg = Image.new('RGB', size = (aImgWidth, aImgHeight), color = (255, 255, 255))
+        
+        # Process each frame with the chord fingerings.
+        Image.Image.paste(aImg, chordA, (120, 30))
+        Image.Image.paste(aImg, chordG, (485, 30))
+        Image.Image.paste(aImg, frame, (0, 200))
+
+        Image.Image.paste(aImg, chordA, (120, 359))
+        Image.Image.paste(aImg, chordG, (485, 359))
+        Image.Image.paste(aImg, frame, (0, 529))              
+        
+        # Save the annotated image for display to the user.
+        aImg.save("img/annotated.png");
+        """
+        
+        return "Hello World - GET"
 
 if __name__ == '__main__':
     app.run()
