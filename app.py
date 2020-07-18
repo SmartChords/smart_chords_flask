@@ -204,10 +204,10 @@ def predict():
         #
         # # build_model_input(notes)
         # # chords = get_chord_predictions()
-            
-        chordA = Image.open("./static/img/A-Chord.png").convert('L')
-        
-        
+
+        # chordA = Image.open("./static/img/A-Chord.png").convert('L')
+
+
         # # FROM HERE, chords WILL BE AN ARRAY OF NAMES THAT WE WILL USE TO QUERY THE LOOKUP TABLE
         # # IT WILL LOOK SOMETHING LIKE THIS: ['c#-min' 'g#-min' 'D-Maj7' 'D-Maj7' 'c#-min' 'B-Maj7']
         # # QUERY THE TABLE AND GET AN ARRAY OF THE CORRESPONDING DB ROWS
@@ -230,7 +230,7 @@ def predict():
         #     draw.text((j, height - 40), i, (0, 0, 0), font=font)
         #     j += (width / (len(notes) + 4))
         # layer.save("static/img/download/annotated.png")
-        
+
         download = "annotated.png"
         return render_template('annotated.html', download=download)
 
