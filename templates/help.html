@@ -1,28 +1,51 @@
 {% extends "layout.html" %}
 
 {% block content %}
+  <div class="col-sm-1"></div>
   <div class="col-sm-8">
-    <p><h2 class="text-center">Help/Frequently Asked Questions</h2></p>
-    <p>&nbsp;</p>
-    <ul>
+    <h2 class="text-center">Help/Frequently Asked Questions</h2>
 
-    <li><b>Q:&nbsp;&nbsp;What types of input files are supported?</b>
-    <br/><br/><b>A:</b><i>&nbsp;&nbsp;At this time the only file types SmartChords supports are: JPEG, PNG and GIF.</i>
-    </li><br/>
-
-    <li><b>Q:&nbsp;&nbsp;Is there a specific size the file needs to be?</b>
-    <br/><br/><b>A:</b><i>&nbsp;&nbsp;Yes. Your file must meet the minimum size of 400 pixels in width and 500 pixels in heigth.</i>
-    </li><br/>
-
-    <li><b>Q:&nbsp;&nbsp;Can I print or save the output image generated?</b>
-    <br/><br/><b>A:</b><i>&nbsp;&nbsp;Yes. You can right click on the generated image and choose <u>save image as</u>
-    and select where to save the file.  As well you can select the download option in the navigation menu.</i>
-    </li><br/>
-
-    <li><b>Q:&nbsp;&nbsp;Can I email myself the output image generated?</b>
-    <br/><br/><b>A:</b><i>&nbsp;&nbsp;No. That is not an option available today but will be in a future release.  Today
-    you can save the file and email the saved file.</i>
-    </li><br/>
+    <ul class="list-group list-group-flush my-4">
+      <li class="list-group-item">
+        <div class="question font-weight-bold mb-3">
+          <span class="q pr-2">Q:</span>
+          <span class="question-text">What types of input files are supported?</span>
+        </div>
+        <div class="answer mb-4">
+          <span class="a font-weight-bold pr-2">A:</span>
+          <span class="answer-text font-italic">At this time the only file types SmartChords supports are: JPEG, PNG and GIF.</span>
+        </div>
+      </li>
+      <li class="list-group-item">
+        <div class="question font-weight-bold mt-4 mb-3">
+          <span class="q pr-2">Q:</span>
+          <span class="question-text">Is there a specific size the file needs to be?</span>
+        </div>
+        <div class="answer mb-4">
+          <span class="a font-weight-bold pr-2">A:</span>
+          <span class="answer-text font-italic">Yes. Your file must meet the minimum size of 400 pixels in width and 500 pixels in heigth.</span>
+        </div>
+      </li>
+      <li class="list-group-item">
+        <div class="question font-weight-bold mt-4 mb-3">
+          <span class="q pr-2">Q:</span>
+          <span class="question-text">Can I print or save the output image generated?</span>
+        </div>
+        <div class="answer mb-4">
+          <span class="a font-weight-bold pr-2">A:</span>
+          <span class="answer-text font-italic">Yes. You can right click on the generated image and choose <u>Save Image As...</u> and select where to save the file.  As well you can select the download option in the navigation menu.</span>
+        </div>
+      </li>
+      <li class="list-group-item">
+        <div class="question font-weight-bold mt-4 mb-3">
+          <span class="q pr-2">Q:</span>
+          <span class="question-text">Can I email myself the output image generated?</span>
+        </div>
+        <div class="answer mb-4">
+          <span class="a font-weight-bold pr-2">A:</span>
+          <span class="answer-text font-italic">No. That is not an option available today but will be in a future release. Today you can save the file and email the saved file.</span>
+        </div>
+      </li>
 
     </ul>
   </div>
