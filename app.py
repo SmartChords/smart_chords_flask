@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template, request, flash, redirect, jsonify, send_from_directory, send_file, make_response
+from flask import Flask, render_template, request, flash, redirect, jsonify, send_from_directory, send_file, make_response, session
 from werkzeug.utils import secure_filename
 from forms import ContactForm
 from flask_mail import Message, Mail
@@ -19,10 +19,8 @@ from PIL import ImageDraw
 # mail = Mail()
 
 app = Flask(__name__)
-# app.config.from_object(os.environ['APP_SETTINGS'])
-app.secret_key = 'development key'
 
-#
+app.config.from_object('config.Config')
 # mail.init_app(app)
 
 
@@ -47,7 +45,6 @@ def index():
             flash("Incorrect file type")
             return redirect(request.url)
 
-        # return render_template("preview.html", filename=filename)
 
     else:
         return render_template('index.html')
@@ -63,23 +60,20 @@ def allowed_image(filename):
     else:
         return False
 
-
 @app.route('/upload/<filename>')
 def display_upload(filename):
-	return redirect(url_for('static', filename='img/uploads/' + filename), code=301)
+	return send_from_directory(app.config['IMAGE_UPLOADS'], filename)
 
 @app.route('/download/<download>')
 def display_download(download):
-	return redirect(url_for('static', download='img/download/' + download), code=301)
-
-@app.route('/preview', methods=['GET'])
-def preview():
-    return render_template("preview.html")
+	return send_from_directory(app.config['IMAGE_DOWNLOADS'], filename)
 
 
-@app.route('/loading')
-def load():
-    return render_template('load.html')
+
+@app.route('/preview/<filename>', methods=['GET'])
+def preview(filename):
+    return render_template("preview.html", filename=filename)
+
 
 @app.route('/annotated')
 def annotated():
@@ -170,16 +164,17 @@ WIDTH_REDUCTION, HEIGHT = sess.run([width_reduction_tensor, height_tensor])
 
 decoded, _ = tf.nn.ctc_greedy_decoder(logits, seq_len)
 
-
-#
-# @app.route('/img/<filename>')
-# def send_img(filename):
-#     return send_from_directory('', filename)
-
+def send_img(filename):
+    return send_from_directory(app.config['IMAGE_UPLOADS'], filename)
 
 @app.route('/predict', methods=['POST'])
 def predict():
-    if request.method == 'POST':
+    if request.method == 'POST':        
+    
+        filename = request.form['preview-image']
+        img = send_img(filename)
+        img.direct_passthrough = False
+        
         """
         f = request.files['file']
         img = f
