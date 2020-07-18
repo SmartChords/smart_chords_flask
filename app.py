@@ -180,6 +180,7 @@ decoded, _ = tf.nn.ctc_greedy_decoder(logits, seq_len)
 @app.route('/predict', methods=['POST'])
 def predict():
     if request.method == 'POST':
+        """
         f = request.files['file']
         img = f
         image = Image.open(img).convert('L')
@@ -216,27 +217,59 @@ def predict():
         # FROM HERE, chords WILL BE AN ARRAY OF NAMES THAT WE WILL USE TO QUERY THE LOOKUP TABLE
         # IT WILL LOOK SOMETHING LIKE THIS: ['c#-min' 'g#-min' 'D-Maj7' 'D-Maj7' 'c#-min' 'B-Maj7']
         # QUERY THE TABLE AND GET AN ARRAY OF THE CORRESPONDING DB ROWS
+        """
+    
+        frames = 4
+        chordPad = 30
+        framePad = 25
+            
+        chordA = Image.open("img/A-Chord.png").convert('L')
+        chordG = Image.open("img/G-Chord.png").convert('L')
+        frame = Image.open("img/Frame-1.png").convert('L')        
+        
+        aImgWidth = 907
+        aImgHeight = 900
+        
+        # Create the ne wimage with the chord image height, frame height and padding.
+        aImg = Image.new('RGB', size = (aImgWidth, aImgHeight), color = (255, 255, 255))
+        
+        # Process each frame with the chord fingerings.
+        Image.Image.paste(aImg, chordA, (120, 30))
+        Image.Image.paste(aImg, chordG, (485, 30))
+        Image.Image.paste(aImg, frame, (0, 200))
 
+        Image.Image.paste(aImg, chordA, (120, 359))
+        Image.Image.paste(aImg, chordG, (485, 359))
+        Image.Image.paste(aImg, frame, (0, 529))              
+        
+        # Save the annotated image for display to the user.
+        aImg.save("img/annotated.png");
+        
+        return "Hello World"
+        
+        #return render_template('annotated.html')
+
+        """
         ######### THIS SECTION WRITES TO THE IMAGE #########
-        img = Image.open(img).convert('L')
-        size = (img.size[0], int(img.size[1] * 1.5))
-        layer = Image.new('RGB', size, (255, 255, 255))
-        layer.paste(img, box=None)
-        img_arr = np.array(layer)
-        height = int(img_arr.shape[0])
-        width = int(img_arr.shape[1])
-        draw = ImageDraw.Draw(layer)
+        #img = Image.open(img).convert('L')
+        #size = (img.size[0], int(img.size[1] * 1.5))
+        #layer = Image.new('RGB', size, (255, 255, 255))
+        #layer.paste(img, box=None)
+        #img_arr = np.array(layer)
+        #height = int(img_arr.shape[0])
+        #width = int(img_arr.shape[1])
+        #draw = ImageDraw.Draw(layer)
         # font = ImageFont.truetype(<font-file>, <font-size>)
-        font = ImageFont.truetype("Aaargh.ttf", 20)
+        #font = ImageFont.truetype("Aaargh.ttf", 20)
         # draw.text((x, y),"Sample Text",(r,g,b))
-        j = width / 9
-        for i in notes: # for i in chord_images:
-            ##########INSTEAD OF draw.text() HERE, WE WANT IT TO PASTE THE CHORD CHARTS #########
-            draw.text((j, height - 40), i, (0, 0, 0), font=font)
-            j += (width / (len(notes) + 4))
-        layer.save("static/img/download/annotated.png")
-        return render_template('annotated.html')
-
+        #j = width / 9
+        #for i in notes: # for i in chord_images:
+        #    ##########INSTEAD OF draw.text() HERE, WE WANT IT TO PASTE THE CHORD CHARTS #########
+        #    draw.text((j, height - 40), i, (0, 0, 0), font=font)
+        #    j += (width / (len(notes) + 4))
+        #layer.save("static/img/download/annotated.png")
+        #return render_template('annotated.html')
+        """
 
 if __name__ == '__main__':
     app.run()
