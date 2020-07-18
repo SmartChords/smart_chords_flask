@@ -84,10 +84,11 @@ def write_inputs_to_csv(prepared_input):
 
 
 def get_chord_predictions():
+    reconstructed_model = keras.models.load_model("chord_model")
     data = pd.read_csv("chord_data/input.csv")
 
     prediction = np.array(data)
-    predictions = np.argmax(model.predict(prediction), axis=-1)
+    predictions = np.argmax(reconstructed_model.predict(prediction), axis=-1)
     prediction_ = np.argmax(to_categorical(predictions), axis = 1)
     prediction_ = encoder.inverse_transform(prediction_)
     return prdiction_
