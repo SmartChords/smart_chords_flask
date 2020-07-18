@@ -147,15 +147,17 @@ body {
 .contactFrm input[type="submit"]:hover {
     background: none;
     color: black;
-} */
+}
+
+.q, .a {
+  padding-right: 5px;
+}
 
 
 #footer {
     clear:both;
     margin:auto;
-    height: 19px;
-    text-align:center;
-    height: 40px;
+
 }
 
 #footer_hr {
