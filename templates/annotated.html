@@ -8,7 +8,7 @@
         <p class="text-center">You can view the image below or download the file for later.</p>
 
         <div class="row image-row">
-          <img  width="600" height="900" src="{{ url_for('display_download', download=download) }}">
+          <img width="600" src="{{ url_for('display_download', download=download) }}">
         </div>
       {% else %}
         <h2 class="text-center">Whoops! Something went wrong. :( </h2>

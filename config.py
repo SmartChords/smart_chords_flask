@@ -8,7 +8,8 @@ class Config(object):
     CSRF_ENABLED = True
     SECRET_KEY = 'todo-change-this'
     IMAGE_UPLOADS = './static/img/uploads'
-    ALLOWED_IMAGE_EXTENSIONS = ["JPEG", "JPG", "PNG"]
+    IMAGE_DOWNLOADS = './static/img/downloads'
+    ALLOWED_IMAGE_EXTENSIONS = ["JPEG", "JPG", "PNG", "GIF"]
     MAIL_SERVER = "smtp.gmail.com"
     MAIL_PORT = 465
     MAIL_USE_SSL = True

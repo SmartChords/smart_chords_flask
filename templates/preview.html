@@ -2,22 +2,32 @@
 
 {% block content %}
   <div class="col-sm-1"></div>
-  <div class="col-sm-6">
+  <div class="col-sm-6" id="preview-block">
     <h2 class="text-center">Preview</h2>
-    <div class="row button-row">
-      <span class="preview-text">Would you like to transcribe this music?</span>
       <!-- add form here with hidden input fields with image data and submit to send data to ML model.  -->
-      <span class="buttons-list">
-        <a href="{{ url_for('load') }}" type="button" class="btn btn-sm btn-secondary">Submit</a>
-        <a href="{{ url_for('index') }}" type="button" class="btn btn-sm btn-light">Cancel</a>
-      </span>
-    </div>
-
-      <!-- Get the currently stored filename to display to the user for preview. -->
       {% if filename %}
+        <div class="row button-row">
+          <span class="preview-text">Would you like to transcribe this music?</span>
+            <span class="buttons-list">
+              <form action="{{ url_for('predict') }}" method="POST" enctype="multipart/form-data" id="preview-image-form">
+                <input type="hidden" name="preview-image" id="previewImage" value="{{ filename }}"">
+                <button id="submit-preview-button" class="btn btn-sm btn-secondary" onclick="sendToPreview()" type="submit">Submit</button>
+              </form>
+              <a href="{{ url_for('index') }}" type="button" class="btn btn-sm btn-light">Cancel</a>
+            </span>
+          </div>
         <div class="row image-row">
-      		<img src="{{ url_for('display_image', filename=filename) }}">
+      		<img width="600" src="{{ url_for('display_upload', filename=filename) }}">
       	</div>
       {% endif %}
-  </div>
+    </div>
+    <div id="loading-block" style="display:none">
+      <div class="col-sm-6">
+        <div class="loader"></div>
+        <div class="h-25 d-inline-block">
+          <h2 class="text-center">Loading...</h2>
+        </div>
+      </div>
+      <div class="col-sm-2"></div>
+    </div>
 {% endblock %}

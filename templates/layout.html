@@ -49,11 +49,13 @@
     <script src="https://code.jquery.com/jquery-3.1.1.slim.min.js" integrity="sha384-A7FZj7v+d/sdmMqp/nOQwliLvUsJfDHW+k9Omg/a/EheAdgtzNs3hpfag6Ed950n" crossorigin="anonymous"></script>
      <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
      <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
+     <script src="{{ url_for('static', filename='js/main.js') }}"> </script>
 
     <div id="footer" class="text-center text-muted">
-        <p>&nbsp;</p>
+      <div class="pb-2 pt-5">
         <hr id="footer_hr">
-    	<p>SmartChords&copy;2020&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;<a href="mailto:contact@smartchords.com?subject=Feedback">Send Feedback</a></p>
+      	<span class="pr-3">SmartChords&copy;2020</span><span>|</span><span class="pl-3"><a href="mailto:contact@smartchords.com?subject=Feedback">Send Feedback</a></span>
+      </div>
     </div>
   </body>
 </html>

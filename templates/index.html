@@ -4,22 +4,21 @@
   <div class="col-sm-1"></div>
   <div class="col-sm-6">
     <h2 class="text-center">Welcome to SmartChords!</h2>
-    <p class="text-center">Short explanation here on what to do </p>
+    <p class="text-center">We will transcribe your music to make it easier to read!</p>
+    {% for message in get_flashed_messages() %}
+      <div class="alert alert-danger" role="alert">{{ message }}</div>
+    {% endfor %}
     <form action="/" method="POST" enctype="multipart/form-data">
       <label for="fileToUpload">Select image to upload:</label>
       <div class="input-group mb-3">
         <div class="custom-file" id="file-js">
-          <input type="file" name="fileToUpload" class="custom-file-input" id="fileToUpload">
+          <input type="file" name="fileToUpload" class="custom-file-input" id="fileToUpload" onchange="addFileName()">
           <label class="text-nowrap custom-file-label" for="inputGroupFile02" id="fileName" aria-describedby="inputGroupFileAddon02">Choose file</label>
         </div>
         <div class="input-group-append">
           <input type="submit" class="input-group-text" name="submit" value="Upload" id="uploadButton">
         </div>
       </div>
-      <script src="{{ url_for('static', filename='js/main.js') }}"> </script>
     </form>
   </div>
-  {% for error in errors %}
-    <h4>{{ error }}</h4>
-  {% endfor %}
 {% endblock %}
