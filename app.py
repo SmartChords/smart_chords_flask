@@ -15,6 +15,7 @@ import cv2
 import numpy as np
 from PIL import Image
 from PIL import ImageDraw
+from PIL import ImageChops
 
 # mail = Mail()
 
@@ -24,6 +25,55 @@ app.config.from_object('config.Config')
 app.secret_key = 'development key'
 
 # mail.init_app(app)
+
+
+
+#crop function, used by the partition (horizontal) algorithm
+def crop(im, white):
+    bg = Image.new(im.mode, im.size, white)
+    diff = ImageChops.difference(im, bg)
+    bbox = diff.getbbox()
+    if bbox:
+        return im.crop(bbox)
+
+#algorithm that splits (partitions) an image horizontally based on white lines
+# note that the 2nd paramtere is actually the color passed, so the splitting can 
+# be done accordin to any color line (though we use white, which is 255).
+#also, this is a recursive function, and returns an array of images. If no horizontal w
+#white lines were found in the original image, it will return an array with one entry, the original image.
+def split(im, white):
+    # Is there a horizontal white line?
+    whiteLine = Image.new(im.mode, (im.width, 1), white)
+    for y in range(im.height):
+        line = im.crop((0, y, im.width, y+1))
+        if line.tobytes() == whiteLine.tobytes():
+            # There is a white line
+            # So we can split the image into two
+            # and for efficiency, crop it
+            ims = [
+                crop(im.crop((0, 0, im.width, y)), white),
+                crop(im.crop((0, y+1, im.width, im.height)), white)
+            ]
+            # Now, because there may be white lines within the two subimages
+            # Call split again, making this recursive
+            return [sub_im for im in ims for sub_im in split(im, white)]
+    return[im]
+
+# The starting point of the split algorithm. We call this
+# function with the input image that we would like to split horizontally
+# this function, as is, assumes that the splitting is done based on the color
+# of the very first pixel in the image (pixel at 0,0). With a withe background,
+# this is almost always white, but we could hard code this if necessary
+def trim(im):
+    # You have defined the pixel at (0, 0) as white in your code
+    white = im.getpixel((0,0))
+
+    # Initial crop
+    im = crop(im, white)
+    if im:
+        return split(im, white)
+    else:
+        print("No image detected")
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -172,9 +222,26 @@ def send_img(filename):
 @app.route('/predict', methods=['POST'])
 def predict():
     if request.method == 'POST':
+
+
         filename = request.form['preview-image']
+
+ 
         img = send_img(filename)
         img.direct_passthrough = False
+        f= filename
+        image1 = Image.open(f).convert('L')
+        horiz_images = trim(image1) # this splits the image horizontally, based on white lines
+        index = 0;
+        #// for practice, we save extracted images in the same directory as app.py
+        # NOTE ALSO< THAT AS THE CODE STANDS NOW, THE INPUT IMAGE MUST ALSO BE IN THE
+        #APP.PY directory. THE SPLITTING IS DONE AFTER YOU SELECT AND SUBMIT an IMAGE
+        for i in horiz_images: 
+            i.save(str(index) + ".png")
+            index = index + 1
+
+        print ("came back from breaking image up")
+        
 
         # image = Image.open(img).convert('L')
         # image = np.array(image)
