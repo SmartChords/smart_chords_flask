@@ -173,7 +173,7 @@ def predict():
         filename = request.form['preview-image']
         img = send_img(filename)
         img.direct_passthrough = False
-
+        
         # image = Image.open(img).convert('L')
         # image = np.array(image)
         # image = resize(image, HEIGHT)
@@ -204,9 +204,40 @@ def predict():
         #
         # # build_model_input(notes)
         # # chords = get_chord_predictions()
-            
-        chordA = Image.open("./static/img/A-Chord.png").convert('L')
         
+        frames = ["Frame-1.png", "Frame-2.png", "Frame-3.png", "Frame-4.png"]
+        chords = ["A-Chord.png", "Gmaj7-Chord.png", "C-Chord.png", "Em7-Chord.png"]
+        coords = [137, 300, 400, 640]
+        
+        # This is the padding between frames and between the chord chart and the frame
+        chordPad = 30
+        framePad = 25
+        
+        # Curser will be the Y-Row in the image at any time.
+        curserY = 0
+        
+        # Create a new annotated image to display
+        # TODO - Get the cumulative width and height
+        aImg = Image.new('RGB', size = (aImgWidth, aImgHeight), color = (255, 255, 255))
+        
+        # Process and paste each frame into the annotated image:
+        for frame in frames:
+            # Open the frame
+            frameImg = Image.open("./static/testframes/" + frame).convert('L')
+            
+            # Paste the chords for this frame into annotated.png
+            for i in range(len(chords)):
+                # Open the chord image
+                # Paste the chord[i] at coords[i]
+                # Close the chord image
+                
+            # Paste the frame
+                
+            # Close the frame
+            
+            
+        # Save the annotated image
+        aImg.save("./static/img/download/annotated.png")
         
         # # FROM HERE, chords WILL BE AN ARRAY OF NAMES THAT WE WILL USE TO QUERY THE LOOKUP TABLE
         # # IT WILL LOOK SOMETHING LIKE THIS: ['c#-min' 'g#-min' 'D-Maj7' 'D-Maj7' 'c#-min' 'B-Maj7']
@@ -232,7 +263,9 @@ def predict():
         # layer.save("static/img/download/annotated.png")
         
         download = "annotated.png"
-        return render_template('annotated.html', download=download)
+        #return render_template('annotated.html', download=download)
+        
+        return "Finished"
 
 if __name__ == '__main__':
     app.run()
