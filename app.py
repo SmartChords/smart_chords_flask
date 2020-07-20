@@ -16,6 +16,8 @@ import numpy as np
 from PIL import Image
 from PIL import ImageDraw
 from PIL import ImageChops
+from PIL import ImageFont
+
 
 # mail = Mail()
 
@@ -25,6 +27,53 @@ app.config.from_object('config.Config')
 app.secret_key = 'development key'
 
 # mail.init_app(app)
+
+
+def findNextWhiteLine(im, start_line, color):
+    whiteLine = Image.new(im.mode, (im.width, 1), color)
+    whitebytes = whiteLine.tobytes()
+    for y in range (start_line, im.height):
+        line = im.crop((0, y, im.width, y+1))
+        #line_bytes = line.tobytes()
+        if line.tobytes() == whiteLine.tobytes():
+            return y
+    return -1
+
+def findNextBlackLine(im, start_line, color):
+    whiteLine = Image.new(im.mode, (im.width, 1), color)
+    whitebytes = whiteLine.tobytes()
+    for y in range (start_line, im.height):
+        line = im.crop((0, y, im.width, y+1))
+        #line_bytes = line.tobytes
+        if line.tobytes() != whiteLine.tobytes():
+            return y
+    return -1
+
+def partitionImage(im, color):
+    next_white_line = 0
+    next_black_line = 0
+    array_img = []
+    more = True
+    while more:
+        next_black_line = findNextBlackLine(im, next_black_line, color)
+        if next_black_line != -1:
+            next_white_line = findNextWhiteLine(im, next_black_line, color)
+            if next_white_line != -1:
+                sub_img = im.crop((0, next_black_line, im.width, next_white_line -1))
+                array_img.append(sub_img)
+                next_black_line = next_white_line;
+            else:
+                sub_img = im.crop((0, next_black_line, im.width, im.height))
+                array_img.append(sub_img)
+                more = False
+        else:
+            more = False
+    
+            if len(array_img) == 0:
+                array_img.append(im)
+    return array_img
+
+
 
 
 
@@ -44,6 +93,7 @@ def crop(im, white):
 def split(im, white):
     # Is there a horizontal white line?
     whiteLine = Image.new(im.mode, (im.width, 1), white)
+    print ("Image Width = " + str(im.width))
     for y in range(im.height):
         line = im.crop((0, y, im.width, y+1))
         if line.tobytes() == whiteLine.tobytes():
@@ -74,6 +124,84 @@ def trim(im):
         return split(im, white)
     else:
         print("No image detected")
+
+def isMusicalImage(image_to_convert):
+    indicator_img = Image.open("indicator.png").convert('L')
+    indicator_w = indicator_img.width
+    indicator_h = indicator_img.height
+    image_h = image_to_convert.height
+    ratio = float((image_h / indicator_h))
+    resize_w = int(indicator_w * ratio)
+    resize_h = int(indicator_h * ratio)
+    resize_img = cv2.resize(np.array(indicator_img), (resize_w, resize_h))
+
+
+    result = cv2.matchTemplate(np.array(image_to_convert),resize_img,cv2.TM_CCOEFF_NORMED)
+    threshold = 0.8
+    flag = False
+    probability = np.amax(result)
+    if np.amax(result) > threshold:
+        flag = True
+    min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
+    if (min_loc < max_loc):
+        flag = True
+    unraveled = np.unravel_index(result.argmax(),result.shape)
+    print (unraveled)
+    
+
+
+
+    return flag
+
+def doConversion(image_to_convert):
+      #isMusicalImage(image_to_convert)
+      img = image_to_convert
+      image = image_to_convert;
+      #image = Image.open(img).convert('L')
+      image = np.array(image)
+      image = resize(image, HEIGHT)
+      image = normalize(image)
+      image = np.asarray(image).reshape(1,image.shape[0],image.shape[1],1)
+
+      seq_lengths = [ image.shape[2] / WIDTH_REDUCTION ]
+      prediction = sess.run(decoded,
+                            feed_dict={
+                                input: image,
+                                seq_len: seq_lengths,
+                                rnn_keep_prob: 1.0,
+                            })
+      str_predictions = sparse_tensor_to_strs(prediction)
+
+      array_of_notes = []
+
+      for w in str_predictions[0]:
+          array_of_notes.append(int2word[w])
+      notes=[]
+      for i in array_of_notes:
+          if i[0:5]=="note-":
+              if not i[6].isdigit():
+                  notes.append(i[5:7])
+              else:
+                  notes.append(i[5])
+
+      #img = Image.open(img).convert('L')
+      size = (img.size[0], int(img.size[1]*1.5))
+      layer = Image.new('RGB', size, (255,255,255))
+      layer.paste(img, box=None)
+      img_arr = np.array(layer)
+      height = int(img_arr.shape[0])
+      width = int(img_arr.shape[1])
+      # print(img_arr.shape[0])
+      draw = ImageDraw.Draw(layer)
+      # font = ImageFont.truetype(<font-file>, <font-size>)
+      font = ImageFont.truetype("Aaargh.ttf", 20)
+      # draw.text((x, y),"Sample Text",(r,g,b))
+      j = width / 9
+      for i in notes:
+          draw.text((j, height-40), i, (0,0,0), font=font)
+          j+= (width / (len(notes) + 4))
+
+      return layer      
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -223,24 +351,48 @@ def send_img(filename):
 def predict():
     if request.method == 'POST':
 
+        converted_array = []
 
         filename = request.form['preview-image']
 
  
-        img = send_img(filename)
-        img.direct_passthrough = False
+        #img = send_img(filename)
+        #img.direct_passthrough = False
         f= filename
         image1 = Image.open(f).convert('L')
-        horiz_images = trim(image1) # this splits the image horizontally, based on white lines
+        
+        #we assume the color at pixel 0,0 is the color of the background
+        color = image1.getpixel((0,0))
+        #horiz_images = trim(image1) # this splits the image horizontally, based on white lines
+        horiz_images = partitionImage(image1, color) # this splits the image horizontally, based on white lines
         index = 0;
         #// for practice, we save extracted images in the same directory as app.py
         # NOTE ALSO< THAT AS THE CODE STANDS NOW, THE INPUT IMAGE MUST ALSO BE IN THE
         #APP.PY directory. THE SPLITTING IS DONE AFTER YOU SELECT AND SUBMIT an IMAGE
         for i in horiz_images: 
-            i.save(str(index) + ".png")
+            fname = str(index) +".png"
+            #i.save(fname)
+            #converted = doConversion(fname)
+            converted = doConversion(i)
+            #converted.save(str(index) +"_converted.png")
+            converted_array.append(converted)
             index = index + 1
+        
+        converted_height = 0
+        for c in converted_array:
+            converted_height = converted_height + c.height
+        
+        combined_width = converted_array[0].width
+        dst = Image.new('L', (combined_width, converted_height))
+        h_index = 0
+        for c in converted_array: #this loop stictches back the parts, and saves the result
+            dst.paste(c, (0, h_index))
+            h_index = h_index + c.height
 
-        print ("came back from breaking image up")
+        dst_name = "converted_" + filename
+        dst.save(dst_name)
+
+        return render_template('annotated.html')
         
 
         # image = Image.open(img).convert('L')
@@ -298,6 +450,6 @@ def predict():
         # layer.save("static/img/download/annotated.png")
         # return render_template('annotated.html')
 
-
+ 
 if __name__ == '__main__':
     app.run()
