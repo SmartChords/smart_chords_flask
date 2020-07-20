@@ -6,8 +6,7 @@ from flask_mail import Message, Mail
 from functools import wraps, update_wrapper
 from tensorflow.python.framework import ops
 from tensorflow.python.training import saver as saver_lib
-import os
-import notes
+from notes import build_model_input, get_chord_predictions
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 import tensorflow as tf
@@ -15,14 +14,15 @@ import cv2
 import numpy as np
 from PIL import Image
 from PIL import ImageDraw
+from PIL import ImageChops
 
 # mail = Mail()
 
 app = Flask(__name__)
 
 app.config.from_object('config.Config')
-# mail.init_app(app)
 
+# mail.init_app(app)
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -37,10 +37,9 @@ def index():
             return redirect(request.url)
 
         if image and allowed_image(image.filename):
-            filename = secure_filename(image.filename)
-            image.save(os.path.join(app.config["IMAGE_UPLOADS"], filename))
-
-            return render_template('preview.html', filename=filename)
+            file_name = secure_filename(image.filename)
+            image.save(os.path.join(app.config["IMAGE_UPLOADS"], file_name))
+            return render_template('preview.html', filename=file_name)
         else:
             flash("Incorrect file type")
             return redirect(request.url)
@@ -55,6 +54,7 @@ def allowed_image(filename):
         return False
 
     ext = filename.rsplit(".", 1)[1]
+
     if ext.upper() in app.config["ALLOWED_IMAGE_EXTENSIONS"]:
         return True
     else:
@@ -167,103 +167,185 @@ decoded, _ = tf.nn.ctc_greedy_decoder(logits, seq_len)
 def send_img(filename):
     return send_from_directory(app.config['IMAGE_UPLOADS'], filename)
 
+#crop function, used by the partition (horizontal) algorithm
+def crop(im, white):
+    bg = Image.new(im.mode, im.size, white)
+    diff = ImageChops.difference(im, bg)
+    bbox = diff.getbbox()
+    if bbox:
+        return im.crop(bbox)
+
+#algorithm that splits (partitions) an image horizontally based on white lines
+# note that the 2nd paramtere is actually the color passed, so the splitting can
+# be done accordin to any color line (though we use white, which is 255).
+#also, this is a recursive function, and returns an array of images. If no horizontal w
+#white lines were found in the original image, it will return an array with one entry, the original image.
+def split(im, white):
+    # Is there a horizontal white line?
+    whiteLine = Image.new(im.mode, (im.width, 1), white)
+    for y in range(im.height):
+        line = im.crop((0, y, im.width, y+1))
+        if line.tobytes() == whiteLine.tobytes():
+            # There is a white line
+            # So we can split the image into two
+            # and for efficiency, crop it
+            ims = [
+                crop(im.crop((0, 0, im.width, y)), white),
+                crop(im.crop((0, y+1, im.width, im.height)), white)
+            ]
+            # Now, because there may be white lines within the two subimages
+            # Call split again, making this recursive
+            return [sub_im for im in ims for sub_im in split(im, white)]
+    return[im]
+
+# The starting point of the split algorithm. We call this
+# function with the input image that we would like to split horizontally
+# this function, as is, assumes that the splitting is done based on the color
+# of the very first pixel in the image (pixel at 0,0). With a withe background,
+# this is almost always white, but we could hard code this if necessary
+def trim(im):
+    # You have defined the pixel at (0, 0) as white in your code
+    white = im.getpixel((0,0))
+
+    # Initial crop
+    im = crop(im, white)
+    if im:
+        return split(im, white)
+    else:
+        print("No image detected")
+
+
+def get_notes_from_frames(img):
+    image = np.array(img)
+    image = resize(image, HEIGHT)
+    image = normalize(image)
+    image = np.asarray(image).reshape(1, image.shape[0], image.shape[1], 1)
+
+    seq_lengths = [image.shape[2] / WIDTH_REDUCTION]
+    prediction = sess.run(decoded,
+                          feed_dict={
+                              input: image,
+                              seq_len: seq_lengths,
+                              rnn_keep_prob: 1.0,
+                          })
+    str_predictions = sparse_tensor_to_strs(prediction)
+    array_of_notes = []
+
+    for w in str_predictions[0]:
+        array_of_notes.append(int2word[w])
+
+    notes = []
+    for i in array_of_notes:
+        if i[0:4] == "key-":
+            notes.append(i)
+        if i[0:5] == "note-":
+            notes.append(i.split("-")[1])
+        if i == 'BAR':
+            notes.append(i)
+
+    return notes
+
 @app.route('/predict', methods=['POST'])
 def predict():
     if request.method == 'POST':
         filename = request.form['preview-image']
-        img = send_img(filename)
-        img.direct_passthrough = False
-        
-        # image = Image.open(img).convert('L')
-        # image = np.array(image)
-        # image = resize(image, HEIGHT)
-        # image = normalize(image)
-        # image = np.asarray(image).reshape(1, image.shape[0], image.shape[1], 1)
-        #
-        # seq_lengths = [image.shape[2] / WIDTH_REDUCTION]
-        # prediction = sess.run(decoded,
-        #                       feed_dict={
-        #                           input: image,
-        #                           seq_len: seq_lengths,
-        #                           rnn_keep_prob: 1.0,
-        #                       })
-        # str_predictions = sparse_tensor_to_strs(prediction)
-        # array_of_notes = []
-        #
-        # for w in str_predictions[0]:
-        #     array_of_notes.append(int2word[w])
-        #
-        # notes = []
-        # for i in array_of_notes:
-        #     if i[0:4] == "key-":
-        #         notes.append(i)
-        #     if i[0:5] == "note-":
-        #         notes.append(i.split("-")[1])
-        #     if i == 'BAR':
-        #         notes.append(i)
-        #
-        # # build_model_input(notes)
-        # # chords = get_chord_predictions()
-        
+        # img = send_img(filename)
+        # img.direct_passthrough = False
+
+        f= filename
+        image1 = Image.open(f).convert('L')
+        horiz_images = trim(image1) # this splits the image horizontally, based on white lines
+        index = 0;
+        #// for practice, we save extracted images in the same directory as app.py
+        # NOTE ALSO< THAT AS THE CODE STANDS NOW, THE INPUT IMAGE MUST ALSO BE IN THE
+        #APP.PY directory. THE SPLITTING IS DONE AFTER YOU SELECT AND SUBMIT an IMAGE
+        for i in horiz_images:
+            i.save(str(index) + ".png")
+            index = index + 1
+
+        print ("came back from breaking image up")
+        print(index)
+        chords = []
+        for i in range(index - 1):
+            image = Image.open(f"{i}.png").convert('L')
+            w, h = image.size
+            if w < 1000 and h < 50:
+                continue
+
+            notes = get_notes_from_frames(image)
+            if len(notes) == 0:
+                print(f"no notes in {i}")
+                continue
+
+            build_model_input(notes, i)
+            c = get_chord_predictions(i)
+            chords.append(c)
+
+        print(str(chords))
+
+
+        # FROM HERE, chords WILL BE AN ARRAY OF NAMES THAT WE WILL USE TO QUERY THE LOOKUP TABLE
+        # # IT WILL LOOK SOMETHING LIKE THIS: ['c#-min' 'g#-min' 'D-Maj7' 'D-Maj7' 'c#-min' 'B-Maj7']
+
+
         # ToDo - I am looking for output like this from the algoritms.  This is just canned data.
-        # I am guessing this might change.  -RTW
-        frames = ["Frame-1.png", "Frame-2.png", "Frame-3.png", "Frame-4.png"]
-        chords = ["A-Chord.png", "Gmaj7-Chord.png", "G-Chord.png", "Em7-Chord.png", "E7-Chord.png", "B7-Chord.png"]
-        coords = [137, 300, 400, 640, 750, 910]
-        
+        # # I am guessing this might change.  -RTW
+
+        # frames = ["Frame-1.png", "Frame-2.png", "Frame-3.png", "Frame-4.png"]
+        # chords = ["A-Chord.png", "Gmaj7-Chord.png", "G-Chord.png", "Em7-Chord.png", "E7-Chord.png", "B7-Chord.png"]
+        # coords = [137, 300, 400, 640, 750, 910]
+
         # This is the padding between frames and between the chord chart and the frame
-        chordPad = 30
-        framePad = 25
-        chordWidth = 50
-        chordHeight = 70
-        
+        # chordPad = 30
+        # framePad = 25
+        # chordWidth = 50
+        # chordHeight = 70
+
         # Curser will be the Y-Row in the image at any time.
-        cursorY = 0
-        
+        # cursorY = 0
+
         # Create a new annotated image to display
         # TODO - Get the cumulative width and height
-        aImg = Image.new('RGB', size = (970, 1000), color = (255, 255, 255))
-        
+        # aImg = Image.new('RGB', size = (970, 1000), color = (255, 255, 255))
+
         # Process and paste each frame into the annotated image:
-        for frame in frames:            
-            # Open the frame
-            frameImg = Image.open("./static/testframes/" + frame).convert('L')           
-            
-            # Paste the chords for this frame into annotated.png
-            cursorY += chordPad
-            for i in range(len(chords)):
-                # Open the chord image
-                chordImg = Image.open("./static/img/chords/" + chords[i]).convert('L')
-                
-                # Paste the chord[i] at coords[i]
-                Image.Image.paste(aImg, chordImg, (coords[i], cursorY))
-                
-                # Close the chord image
-                chordImg.close()
-                
-            # Set the cursorY value
-            cursorY += (chordHeight + framePad)
-            
-            # Paste the frame
-            Image.Image.paste(aImg, frameImg, (0, cursorY))
-            
-            # Move the cursorY down the frame height
-            cursorY += frameImg.size[1]
-                
-            # Close the frame
-            frameImg.close()            
-                        
-        # Resize and save the annotated image        
-        basewidth = 600
-        wpercent = (basewidth/float(aImg.size[0]))
-        hsize = int((float(aImg.size[1])*float(wpercent)))
-        aImg = aImg.resize((basewidth, hsize), Image.ANTIALIAS)
-        
-        aImg.save("./static/img/downloads/annotated.png")
-        
-        # # FROM HERE, chords WILL BE AN ARRAY OF NAMES THAT WE WILL USE TO QUERY THE LOOKUP TABLE
-        # # IT WILL LOOK SOMETHING LIKE THIS: ['c#-min' 'g#-min' 'D-Maj7' 'D-Maj7' 'c#-min' 'B-Maj7']
-        # # QUERY THE TABLE AND GET AN ARRAY OF THE CORRESPONDING DB ROWS
+        # for frame in frames:
+        #     # Open the frame
+        #     frameImg = Image.open("./static/testframes/" + frame).convert('L')
+        #
+        #     # Paste the chords for this frame into annotated.png
+        #     cursorY += chordPad
+        #     for i in range(len(chords)):
+        #         # Open the chord image
+        #         chordImg = Image.open("./static/img/chords/" + chords[i]).convert('L')
+        #
+        #         # Paste the chord[i] at coords[i]
+        #         Image.Image.paste(aImg, chordImg, (coords[i], cursorY))
+        #
+        #         # Close the chord image
+        #         chordImg.close()
+        #
+        #     # Set the cursorY value
+        #     cursorY += (chordHeight + framePad)
+        #
+        #     # Paste the frame
+        #     Image.Image.paste(aImg, frameImg, (0, cursorY))
+        #
+        #     # Move the cursorY down the frame height
+        #     cursorY += frameImg.size[1]
+        #
+        #     # Close the frame
+        #     frameImg.close()
+        #
+        # # Resize and save the annotated image
+        # basewidth = 600
+        # wpercent = (basewidth/float(aImg.size[0]))
+        # hsize = int((float(aImg.size[1])*float(wpercent)))
+        # aImg = aImg.resize((basewidth, hsize), Image.ANTIALIAS)
+        #
+        # aImg.save("./static/img/downloads/annotated.png")
+
+
         #
         # ######### THIS SECTION WRITES TO THE IMAGE #########
         # img = Image.open(img).convert('L')
@@ -285,7 +367,7 @@ def predict():
         # layer.save("static/img/download/annotated.png")
 
         download = "annotated.png"
-        return render_template('annotated.html', download=download)       
+        return render_template('annotated.html', download=download)
 
 if __name__ == '__main__':
-    app.run()
+    app.run(debug= True)

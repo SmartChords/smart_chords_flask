@@ -10,7 +10,7 @@ class Config(object):
     IMAGE_UPLOADS = './static/img/uploads'
     IMAGE_DOWNLOADS = './static/img/downloads'
     ALLOWED_IMAGE_EXTENSIONS = ["JPEG", "JPG", "PNG", "GIF"]
-    MAIL_SERVER = "smtp.gmail.com"
+    MAIL_SERVER = 'smtp.gmail.com'
     MAIL_PORT = 465
     MAIL_USE_SSL = True
     MAIL_USERNAME = 'contact@example.com'
