@@ -7,7 +7,7 @@ from functools import wraps, update_wrapper
 from tensorflow.python.framework import ops
 from tensorflow.python.training import saver as saver_lib
 from notes import build_model_input, get_chord_predictions
-from frames import partitionImage, label_frame_with_chords_images
+from frames import partitionImage, resize, normalize#, label_frame_with_chords_images
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 import tensorflow as tf
@@ -17,7 +17,6 @@ from PIL import Image
 from PIL import ImageDraw
 from PIL import ImageChops
 from PIL import ImageFont
-
 
 # mail = Mail()
 
@@ -73,9 +72,9 @@ def display_download(download):
 def preview(filename):
     return render_template("preview.html", filename=filename)
 
-@app.route('/annotated')
-def annotated():
-    return render_template('annotated.html')
+@app.route('/annotated', methods=['GET'])
+def annotated(download):
+    return render_template('annotated.html', download=download)
 
 @app.route('/contact', methods=['GET', 'POST'])
 def contact():
@@ -83,7 +82,6 @@ def contact():
     if form.validate_on_submit():
         # TODO: SET UP EMAILING FUNCTIONALITY
         return render_template('contact.html', success=True)
-
 
     return render_template('contact.html', form=form)
 
@@ -154,14 +152,14 @@ def send_img(filename):
     return send_from_directory(app.config['IMAGE_UPLOADS'], filename)
 
 
-# def doConversion(image_to_convert):
+def doConversion(image_to_convert, chords_list):
 #     #isMusicalImage(image_to_convert)
-#     img = image_to_convert
+    # img = image_to_convert
 #     image = image_to_convert;
-#     #image = Image.open(img).convert('L')
-#     image = np.array(image)
-#     image = resize(image, HEIGHT)
-#     image = normalize(image)
+    # image = Image.open(img).convert('L')
+    # image = np.array(image)
+    # image = resize(image, HEIGHT)
+    # image = normalize(image)
 #     image = np.asarray(image).reshape(1,image.shape[0],image.shape[1],1)
 #
 #     seq_lengths = [ image.shape[2] / WIDTH_REDUCTION ]
@@ -184,25 +182,24 @@ def send_img(filename):
 #               notes.append(i[5:7])
 #           else:
 #               notes.append(i[5])
-#
-#     #img = Image.open(img).convert('L')
-#     size = (img.size[0], int(img.size[1]*1.5))
-#     layer = Image.new('RGB', size, (255,255,255))
-#     layer.paste(img, box=None)
-#     img_arr = np.array(layer)
-#     height = int(img_arr.shape[0])
-#     width = int(img_arr.shape[1])
-#     # print(img_arr.shape[0])
-#     draw = ImageDraw.Draw(layer)
-#     # font = ImageFont.truetype(<font-file>, <font-size>)
-#     font = ImageFont.truetype("Aaargh.ttf", 20)
-#     # draw.text((x, y),"Sample Text",(r,g,b))
-#     j = width / 9
-#     for i in notes:
-#       draw.text((j, height-40), i, (0,0,0), font=font)
-#       j+= (width / (len(notes) + 4))
-#
-#     return layer
+
+    img = image_to_convert
+    img = Image.open(img).convert('L')
+    size = (img.size[0], int(img.size[1]*1.5))
+    layer = Image.new('RGB', size, (255,255,255))
+    layer.paste(img, box=None)
+    img_arr = np.array(layer)
+    height = int(img_arr.shape[0])
+    width = int(img_arr.shape[1])
+    # print(img_arr.shape[0])
+    draw = ImageDraw.Draw(layer)
+    font = ImageFont.truetype("Aaargh.ttf", 20)
+    j = width / 5
+    for i in chords_list:
+      draw.text((j, height-40), i, (0,0,0), font=font)
+      j+= (width / (len(chords_list) + 4))
+
+    return layer
 
 def get_notes_from_frame(img):
     image = np.array(img)
@@ -250,58 +247,65 @@ def predict():
         # NOTE ALSO< THAT AS THE CODE STANDS NOW, THE INPUT IMAGE MUST ALSO BE IN THE
         #APP.PY directory. THE SPLITTING IS DONE AFTER YOU SELECT AND SUBMIT an IMAGE
         converted_array = []
+        chords_dict = {}
         index = 0
         for i in horiz_images:
             fname = str(index) +".png"
             i.save(fname)
 
-            chords_dict = {}
             # for i in range(index - 1):
-            image = Image.open(fname).convert('L')
-            w, h = image.size
-            if w < 750 and h < 50:
-                chords_dict[i] = []
+            frame_image = Image.open(fname).convert('L')
+            w, h = frame_image.size
+            if w < 500 or h < 50:
+                print(f"image too small in {index}")
+                converted_array.append(frame_image)
+                chords_dict[index] = []
+                index = index + 1
                 continue
 
             #notes is an array of note values that ideally would look something like this: ['key-3.821', '0.664', '0.883', '0.664', '0.415', '0.498','0.581', 'BAR', '0.581', '0.664', '0.581', '0.249', '0.332', '0.415', '0.498', 'BAR', '0.581', '0.664', '0.883', '0.996', '0.883', '0.664', '0.581', '0.415']
 
-            notes = get_notes_from_frame(image)
+            notes = get_notes_from_frame(frame_image)
+            print('notes from frame ', index)
+            print(notes)
             if len(notes) == 0:
-                print(f"no notes in {i}")
-                chords_dict[i] = []
+                print(f"no notes in {index}")
+                converted_array.append(frame_image)
+                chords_dict[index] = []
+                index = index + 1
                 continue
             else:
-                build_model_input(notes, i)
-                c = get_chord_predictions(i)
-                chords_dict[i] = c
+                build_model_input(notes, index)
+                c = get_chord_predictions(index)
+                chords_dict[index] = c
 
             print(chords_dict)
-            # converted = label_frame_with_chords_images(frame, chords, coords)
 
-            # converted = doConversion(fname)
-            # converted = doConversion(i)
-            #converted.save(str(index) +"_converted.png")
+            converted = doConversion(fname, chords_dict[index])
+            converted.save(str(index) +"_converted.png")
             converted_array.append(converted)
             index = index + 1
 
-        # converted_height = 0
-        # for c in converted_array:
-        #     converted_height = converted_height + c.height
-        #
-        # combined_width = converted_array[0].width
-        # dst = Image.new('L', (combined_width, converted_height))
-        # h_index = 0
-        # for c in converted_array: #this loop stictches back the parts, and saves the result
-        #     dst.paste(c, (0, h_index))
-        #     h_index = h_index + c.height
-        #
-        # dst_name = "converted_" + filename
-        # dst.save(dst_name)
+        converted_height = 0
+        for c in converted_array:
+            converted_height = converted_height + c.height
 
+        combined_width = converted_array[0].width
+        dst = Image.new('L', (combined_width, converted_height))
+        h_index = 0
+        for c in converted_array: #this loop stictches back the parts, and saves the result
+            dst.paste(c, (0, h_index))
+            h_index = h_index + c.height
 
+        dst_name = "converted_" + filename
+        dst.save(dst_name)
+        # dst.save(os.path.join(app.config["IMAGE_DOWNLOADS"], dst_name))
 
-        download = "annotated.png"
-        return render_template('annotated.html', download=download)
+        print(dst_name)
+        print('SHOULD RENDER TEMPLATE HERE')
+
+        # download = "annotated.png"
+        return render_template('annotated.html', download=dst_name)
 
 
 if __name__ == '__main__':
