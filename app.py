@@ -298,8 +298,8 @@ def predict():
         dst = Image.new('L', (combined_width, converted_height))
         h_index = 0
         for c in converted_array: #this loop stictches back the parts, and saves the result
-        dst.paste(c, (0, h_index))
-        h_index = h_index + c.height
+      	    dst.paste(c, (0, h_index))
+      	    h_index = h_index + c.height
 
         dst_name = "converted_" + filename
         # dst_name = "converted_annotatedtest.png"
@@ -321,4 +321,4 @@ def predict():
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run()
