@@ -55,7 +55,7 @@ def unique(list):
     return unique_list
 
 def split_long_measures(arr, ref_array):
-    if len(arr) > 4:
+    if len(arr) > 6:
         mid = len(arr)//2
         L = arr[:mid]
         R = arr[mid:]
