@@ -17,7 +17,7 @@ function sendToPreview() {
   xhr.send(formData);
   document.querySelector('#preview-block').style.display = 'none';
   document.querySelector('#loading-block').style.display = '';
-  xhr.onreadystatechange = function() { 
+  xhr.onreadystatechange = function() {
     if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
       console.log("it worked!", this.responseText);
       document.querySelector('#loading-block').style.display = 'none';

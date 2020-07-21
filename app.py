@@ -1,4 +1,6 @@
 import os
+import os.path
+from os import path
 from flask import Flask, render_template, request, flash, redirect, jsonify, send_from_directory, send_file, make_response, session
 from werkzeug.utils import secure_filename
 from forms import ContactForm
@@ -296,13 +298,23 @@ def predict():
         dst = Image.new('L', (combined_width, converted_height))
         h_index = 0
         for c in converted_array: #this loop stictches back the parts, and saves the result
-            dst.paste(c, (0, h_index))
-            h_index = h_index + c.height
+        dst.paste(c, (0, h_index))
+        h_index = h_index + c.height
 
         dst_name = "converted_" + filename
+        # dst_name = "converted_annotatedtest.png"
+        # dst.save("./static/img/downloads/" + dst_name)
+
         # dst.save(dst_name)
         # dst.save(os.path.join(app.config["IMAGE_DOWNLOADS"], dst_name))
         dst.save(os.path.join(app.config["IMAGE_DOWNLOADS"], dst_name))
+
+        for n in range(index):
+            os.remove( str(n) + ".png" )
+            if ( os.path.exists(str(n) + "_converted.png") ) :
+                os.remove( str(n) + "_converted.png" )
+            else :
+                None
 
 
         return render_template('annotated.html', download=dst_name)
