@@ -1,5 +1,5 @@
-import numpy as np # linear algebra
-import pandas as pd # data processing, CSV file I/O (e.g. pd.read_csv)
+import numpy as np
+import pandas as pd
 import sklearn
 import random
 import time
@@ -10,41 +10,37 @@ import keras
 from keras.models import Sequential
 from keras.layers import Dense
 from keras.utils import np_utils
-from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import LabelEncoder, OrdinalEncoder
 from keras.utils.np_utils import to_categorical
-from sklearn.utils import shuffle
 
 
 # loading the dataset
-data = pd.read_csv("chord_data/chord_training_data.csv")
-data = shuffle(data)
+dataset = pd.read_csv("chord_data/chord_training_data.csv")
+data = dataset.values
+X = data[:, :-1].astype(str)
+y = data[:, -1].astype(str)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=1)
 
-# this is for the testing later on
-i = 20
-data_to_predict = data[:i].reset_index(drop = True)
-predict_chord = data_to_predict.chord
-predict_chord = np.array(predict_chord)
-prediction = np.array(data_to_predict.drop(['chord'],axis= 1))
+ordinal_encoder = OrdinalEncoder()
+ordinal_encoder.fit(X_train)
+X_train = ordinal_encoder.transform(X_train)
+X_test = ordinal_encoder.transform(X_test)
 
-data = data[i:].reset_index(drop = True)
-X = data.drop(['chord'], axis = 1)
-X = np.array(X)
-Y = data['chord']
-
-# Transform different chord options into numerical values
-encoder = LabelEncoder()
-encoder.fit(Y)
-Y = encoder.transform(Y)
-Y = np_utils.to_categorical(Y)
+# ordinal encode target variable
+label_encoder = LabelEncoder()
+label_encoder.fit(y_train)
+y_train = label_encoder.transform(y_train)
+y_train = np_utils.to_categorical(y_train)
+y_test = label_encoder.transform(y_test)
+y_test = np_utils.to_categorical(y_test)
 
 
 def create_model():
   model = keras.Sequential([
-    keras.layers.Dense(10, activation='relu', input_shape=(6,)),
+    keras.layers.Dense(10, activation='relu', input_shape=(6,), kernel_initializer='he_normal'),
     keras.layers.Dense(20, activation='relu'),
     keras.layers.Dense(25, activation='relu'),
-    keras.layers.Dense(30, activation='relu'),
-    keras.layers.Dense(35, activation='relu'),
+    keras.layers.Dense(15, activation='relu'),
     keras.layers.Dense(32, activation = 'softmax')
   ])
 
@@ -54,19 +50,16 @@ def create_model():
 
   return model
 
-
-train_x, test_x, train_y, test_y = model_selection.train_test_split(X,Y,test_size = 0.1, random_state = 0)
-
-# Create a basic model instance
+## define the model
 model = create_model()
-model.fit(train_x, train_y, epochs = 350, batch_size = 15)
+# fit on the training set
+model.fit(X_train, y_train, epochs = 250, batch_size = 25, verbose=2)
+# predict on test set
+yhat = model.predict(X_test)
 
-predictions = np.argmax(model.predict(prediction), axis=-1)
-prediction_ = np.argmax(to_categorical(predictions), axis = 1)
-prediction_ = encoder.inverse_transform(prediction_)
-
-for i, j in zip(prediction_ , predict_chord):
-    print( " the nn predict {}, and the chord to find is {}".format(i,j))
+# evaluate predictions
+# scores = model.evaluate(X_test, y_test)
+# print("\n%s: %.2f%%" % (model.metrics_names[1], scores[1]*100))
 
 
-model.save("my_model")
+model.save("chord_model")
