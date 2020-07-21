@@ -72,7 +72,7 @@ def set_notes_values(notes_list):
     for n in notes_list:
         if len(n) <= 3:
             note_inputs.append(pad_or_truncate(n,5))
-        elif len(n) == 4:
+        elif len(n) <= 6:
             uniq = unique(n)
             note_inputs.append(pad_or_truncate(uniq,5))
         else:
@@ -82,13 +82,13 @@ def set_notes_values(notes_list):
 
 
 def write_inputs_to_csv(prepared_input, frame_no):
-    fields = ['note1', 'note2', 'note3', 'not4', 'note5', 'key']
+    # fields = ['note1', 'note2', 'note3', 'not4', 'note5', 'key']
     rows = prepared_input
     filename = f"chord_data/{frame_no}.csv"
 
     with open(filename, 'w') as csvfile:
         csvwriter = csv.writer(csvfile)
-        csvwriter.writerow(fields)
+        # csvwriter.writerow(fields)
         csvwriter.writerows(rows)
 
 
