@@ -1,4 +1,6 @@
 import os
+import os.path 
+from os import path
 from flask import Flask, render_template, request, flash, redirect, jsonify, send_from_directory, send_file, make_response, session
 from werkzeug.utils import secure_filename
 from forms import ContactForm
@@ -73,8 +75,8 @@ def preview(filename):
     return render_template("preview.html", filename=filename)
 
 @app.route('/annotated', methods=['GET'])
-def annotated(download):
-    return render_template('annotated.html', download=download)
+def annotated():
+    return render_template('annotated.html', download='converted_annotatedtest.png')
 
 @app.route('/contact', methods=['GET', 'POST'])
 def contact():
@@ -296,6 +298,13 @@ def predict():
         for c in converted_array: #this loop stictches back the parts, and saves the result
             dst.paste(c, (0, h_index))
             h_index = h_index + c.height
+            
+        for n in range(index):
+            os.remove( str(n) + ".png" )
+            if ( os.path.exists(str(n) + "_converted.png") ) :
+                os.remove( str(n) + "_converted.png" )  
+            else : 
+                None
 
         dst_name = "converted_" + filename
         dst.save(dst_name)
