@@ -306,14 +306,13 @@ def predict():
             else : 
                 None
 
-        dst_name = "converted_" + filename
-        dst.save(dst_name)
-        # dst.save(os.path.join(app.config["IMAGE_DOWNLOADS"], dst_name))
+        # Set the destination name of the annotated output, and save.
+        dst_name = "converted_annotatedtest.png"        
+        dst.save("./static/img/downloads/" + dst_name)
 
         print(dst_name)
         print('SHOULD RENDER TEMPLATE HERE')
 
-        # download = "annotated.png"
         return render_template('annotated.html', download=dst_name)
 
 
