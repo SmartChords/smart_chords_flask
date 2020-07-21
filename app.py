@@ -1,5 +1,5 @@
 import os
-import os.path 
+import os.path
 from os import path
 from flask import Flask, render_template, request, flash, redirect, jsonify, send_from_directory, send_file, make_response, session
 from werkzeug.utils import secure_filename
@@ -51,6 +51,10 @@ def index():
     else:
         return render_template('index.html')
 
+@app.route('/error')
+def throw_error():
+    flash("How embarassing. Either something went wrong on our end or your file was no bueno. Please try again.")
+    return redirect('/')
 
 def allowed_image(filename):
     if not "." in filename:
@@ -68,15 +72,16 @@ def display_upload(filename):
 
 @app.route('/downloads/<download>')
 def display_download(download):
+	# return send_from_directory(filename)
 	return send_from_directory(app.config['IMAGE_DOWNLOADS'], download)
 
 @app.route('/preview/<filename>', methods=['GET'])
 def preview(filename):
     return render_template("preview.html", filename=filename)
 
-@app.route('/annotated', methods=['GET'])
-def annotated():
-    return render_template('annotated.html', download='converted_annotatedtest.png')
+@app.route('/annotated/<download>', methods=['GET'])
+def annotated(download):
+    return render_template('annotated.html', download=download)
 
 @app.route('/contact', methods=['GET', 'POST'])
 def contact():
@@ -258,8 +263,7 @@ def predict():
             # for i in range(index - 1):
             frame_image = Image.open(fname).convert('L')
             w, h = frame_image.size
-            if w < 500 or h < 50:
-                print(f"image too small in {index}")
+            if w < 500 or h < 75:
                 converted_array.append(frame_image)
                 chords_dict[index] = []
                 index = index + 1
@@ -268,8 +272,6 @@ def predict():
             #notes is an array of note values that ideally would look something like this: ['key-3.821', '0.664', '0.883', '0.664', '0.415', '0.498','0.581', 'BAR', '0.581', '0.664', '0.581', '0.249', '0.332', '0.415', '0.498', 'BAR', '0.581', '0.664', '0.883', '0.996', '0.883', '0.664', '0.581', '0.415']
 
             notes = get_notes_from_frame(frame_image)
-            print('notes from frame ', index)
-            print(notes)
             if len(notes) == 0:
                 print(f"no notes in {index}")
                 converted_array.append(frame_image)
@@ -296,25 +298,27 @@ def predict():
         dst = Image.new('L', (combined_width, converted_height))
         h_index = 0
         for c in converted_array: #this loop stictches back the parts, and saves the result
-            dst.paste(c, (0, h_index))
-            h_index = h_index + c.height
-            
+        dst.paste(c, (0, h_index))
+        h_index = h_index + c.height
+
+        dst_name = "converted_" + filename
+        # dst_name = "converted_annotatedtest.png"
+        # dst.save("./static/img/downloads/" + dst_name)
+
+        # dst.save(dst_name)
+        # dst.save(os.path.join(app.config["IMAGE_DOWNLOADS"], dst_name))
+        dst.save(os.path.join(app.config["IMAGE_DOWNLOADS"], dst_name))
+
         for n in range(index):
             os.remove( str(n) + ".png" )
             if ( os.path.exists(str(n) + "_converted.png") ) :
-                os.remove( str(n) + "_converted.png" )  
-            else : 
+                os.remove( str(n) + "_converted.png" )
+            else :
                 None
 
-        # Set the destination name of the annotated output, and save.
-        dst_name = "converted_annotatedtest.png"        
-        dst.save("./static/img/downloads/" + dst_name)
-
-        print(dst_name)
-        print('SHOULD RENDER TEMPLATE HERE')
 
         return render_template('annotated.html', download=dst_name)
 
 
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=True)

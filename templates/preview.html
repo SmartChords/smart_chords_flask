@@ -4,7 +4,6 @@
   <div class="col-sm-1"></div>
   <div class="col-sm-6" id="preview-block">
     <h2 class="text-center">Preview</h2>
-      <!-- add form here with hidden input fields with image data and submit to send data to ML model.  -->
       {% if filename %}
         <div class="row button-row">
           <span class="preview-text">Would you like to transcribe this music?</span>
@@ -30,4 +29,5 @@
       </div>
       <div class="col-sm-2"></div>
     </div>
+    <div id="annotated-block" class="col-sm-6"></div>
 {% endblock %}

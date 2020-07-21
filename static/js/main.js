@@ -17,9 +17,15 @@ function sendToPreview() {
   xhr.send(formData);
   document.querySelector('#preview-block').style.display = 'none';
   document.querySelector('#loading-block').style.display = '';
-  xhr.onreadystatechange = function() { // Call a function when the state changes.
-    if (this.readyState === XMLHttpRequest.DONE && this.status === 200) { 
-      window.location.href = "/annotated";
-    }
-}
+  xhr.onreadystatechange = function() {
+    if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
+      console.log("it worked!", this.responseText);
+      document.querySelector('#loading-block').style.display = 'none';
+      var annotation = document.querySelector('#annotated-block');
+      annotation.innerHTML = this.responseText;
+    } else if (this.status === 500) {
+  	  console.log("no work", this.responseText);
+      window.location.pathname = '/error';
+  	}
+  }
 }
