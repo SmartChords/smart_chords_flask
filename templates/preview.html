@@ -10,7 +10,7 @@
           <span class="preview-text">Would you like to transcribe this music?</span>
             <span class="buttons-list">
               <form action="{{ url_for('predict') }}" method="POST" enctype="multipart/form-data" id="preview-image-form">
-                <input type="hidden" name="preview-image" id="previewImage" value="{{ filename }}"">
+                <input type="hidden" name="preview-image" id="previewImage" value="{{ filename }}">
                 <button id="submit-preview-button" class="btn btn-sm btn-secondary" onclick="sendToPreview()" type="submit">Submit</button>
               </form>
               <a href="{{ url_for('index') }}" type="button" class="btn btn-sm btn-light">Cancel</a>
