@@ -4,7 +4,7 @@ import csv
 import pandas as pd
 import keras
 from keras.utils import np_utils
-from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import LabelEncoder, OrdinalEncoder
 from keras.utils.np_utils import to_categorical
 
 
@@ -84,31 +84,36 @@ def set_notes_values(notes_list):
 
 
 def write_inputs_to_csv(prepared_input, frame_no):
-    fields = ['note1', 'note2', 'note3', 'not4', 'note5', 'key']
     rows = prepared_input
     filename = f"chord_data/{frame_no}.csv"
 
     with open(filename, 'w') as csvfile:
         csvwriter = csv.writer(csvfile)
-        csvwriter.writerow(fields)
         csvwriter.writerows(rows)
 
 
 def get_chord_predictions(frame_no):
-    data = pd.read_csv("chord_data/chord_training_data.csv")
-    Y = data['chord']
+    dataset = pd.read_csv("chord_data/chord_data_v2.csv", header=None)
+    data = dataset.values
 
-    encoder = LabelEncoder()
-    encoder.fit(Y)
-    Y = encoder.transform(Y)
-    Y = np_utils.to_categorical(Y)
+    y = data[:, -1]
+
+    label_encoder = LabelEncoder()
+    label_encoder.fit(y)
+    y = label_encoder.transform(y)
+    y = np_utils.to_categorical(y)
 
 
     reconstructed_model = keras.models.load_model("chord_model")
-    data = pd.read_csv(f"chord_data/{frame_no}.csv")
+    dataset = pd.read_csv(f"chord_data/{frame_no}.csv", header=None)
+
+    data = dataset.values
+    ordinal_encoder = OrdinalEncoder()
+    ordinal_encoder.fit(data)
+    data = ordinal_encoder.transform(data)
 
     prediction = np.array(data)
     predictions = np.argmax(reconstructed_model.predict(prediction), axis=-1)
     prediction_ = np.argmax(to_categorical(predictions), axis = 1)
-    prediction_ = encoder.inverse_transform(prediction_)
+    prediction_ = label_encoder.inverse_transform(prediction_)
     return prediction_
