@@ -18,23 +18,22 @@
         <div class="row" style="padding-left: 0px;">
           <nav class="col-sm-3">
             <ul class="nav flex-column list-group">
-              <li class="nav-item list-group-item list-group-item-action">
-                <a href="{{ url_for('index') }}">Home</a>
-              </li>
-              <li class="nav-item list-group-item list-group-item-action">
-                <a href="{{ url_for('contact') }}">Contact Us</a>
-              </li>
-              <li class="nav-item list-group-item list-group-item-action">
-                <a href="{{ url_for('help') }}">Help/FAQ</a>
-              </li>
+              <a href="{{ url_for('index') }}">
+                <li class="nav-item list-group-item list-group-item-action">Home</li>
+              </a>
+              <a href="{{ url_for('contact') }}">
+                <li class="nav-item list-group-item list-group-item-action">Contact Us</li>
+              </a>
+              <a href="{{ url_for('help') }}">
+                <li class="nav-item list-group-item list-group-item-action">Help/FAQ</li>
+              </a>
             </ul>
-            {% if download %}
-              <ul class="nav flex-column list-group download-link">
+            <ul id="download-link-option" class="nav flex-column list-group download-link" style="display:none;">
+              <a href="{{ url_for('display_download', download=download) }}" download>
                 <li class="nav-item list-group-item list-group-item-action">
-                  <a href="{{ url_for('display_download', download=download) }}" download>Download File Here</a>
-                </li>
-              </ul>
-            {% endif %}
+                Download File Here</li>
+              </a>
+            </ul>
           </nav>
           <!-- end navbar -->
 
@@ -52,7 +51,7 @@
      <script src="{{ url_for('static', filename='js/main.js') }}"> </script>
 
     <div id="footer" class="text-center text-muted">
-      <div class="pb-2 pt-5">
+      <div class="pb-3 pt-4">
         <hr id="footer_hr">
       	<span class="pr-3">SmartChords&copy;2020</span><span>|</span><span class="pl-3"><a href="mailto:contact@smartchords.com?subject=Feedback">Send Feedback</a></span>
       </div>
