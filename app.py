@@ -72,7 +72,6 @@ def display_upload(filename):
 
 @app.route('/downloads/<download>')
 def display_download(download):
-	# return send_from_directory(filename)
 	return send_from_directory(app.config['IMAGE_DOWNLOADS'], download)
 
 @app.route('/preview/<filename>', methods=['GET'])
@@ -159,37 +158,7 @@ def send_img(filename):
     return send_from_directory(app.config['IMAGE_UPLOADS'], filename)
 
 
-def doConversion(image_to_convert, chords_list):
-#     #isMusicalImage(image_to_convert)
-    # img = image_to_convert
-#     image = image_to_convert;
-    # image = Image.open(img).convert('L')
-    # image = np.array(image)
-    # image = resize(image, HEIGHT)
-    # image = normalize(image)
-#     image = np.asarray(image).reshape(1,image.shape[0],image.shape[1],1)
-#
-#     seq_lengths = [ image.shape[2] / WIDTH_REDUCTION ]
-#     prediction = sess.run(decoded,
-#                         feed_dict={
-#                             input: image,
-#                             seq_len: seq_lengths,
-#                             rnn_keep_prob: 1.0,
-#                         })
-#     str_predictions = sparse_tensor_to_strs(prediction)
-#
-#     array_of_notes = []
-#
-#     for w in str_predictions[0]:
-#       array_of_notes.append(int2word[w])
-#     notes=[]
-#     for i in array_of_notes:
-#       if i[0:5]=="note-":
-#           if not i[6].isdigit():
-#               notes.append(i[5:7])
-#           else:
-#               notes.append(i[5])
-
+def add_chord_label(image_to_convert, chords_list):
     img = image_to_convert
     img = Image.open(img).convert('L')
     size = (img.size[0], int(img.size[1]*1.5))
@@ -198,7 +167,6 @@ def doConversion(image_to_convert, chords_list):
     img_arr = np.array(layer)
     height = int(img_arr.shape[0])
     width = int(img_arr.shape[1])
-    # print(img_arr.shape[0])
     draw = ImageDraw.Draw(layer)
     font = ImageFont.truetype("Aaargh.ttf", 20)
     j = width / 5
@@ -263,17 +231,14 @@ def predict():
             # for i in range(index - 1):
             frame_image = Image.open(fname).convert('L')
             w, h = frame_image.size
-            if w < 500 or h < 75:
+            if w < 500 or h < 65:
                 converted_array.append(frame_image)
                 chords_dict[index] = []
                 index = index + 1
                 continue
 
-            #notes is an array of note values that ideally would look something like this: ['key-3.821', '0.664', '0.883', '0.664', '0.415', '0.498','0.581', 'BAR', '0.581', '0.664', '0.581', '0.249', '0.332', '0.415', '0.498', 'BAR', '0.581', '0.664', '0.883', '0.996', '0.883', '0.664', '0.581', '0.415']
-
             notes = get_notes_from_frame(frame_image)
             if len(notes) == 0:
-                print(f"no notes in {index}")
                 converted_array.append(frame_image)
                 chords_dict[index] = []
                 index = index + 1
@@ -283,9 +248,7 @@ def predict():
                 c = get_chord_predictions(index)
                 chords_dict[index] = c
 
-            print(chords_dict)
-
-            converted = doConversion(fname, chords_dict[index])
+            converted = add_chord_label(fname, chords_dict[index])
             converted.save(str(index) +"_converted.png")
             converted_array.append(converted)
             index = index + 1

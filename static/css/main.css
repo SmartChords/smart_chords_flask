@@ -5,7 +5,7 @@
 html,
 body {
   height: 100%;
-  font-size: 1.25rem;
+  font-size: 1.10rem;
   $font-family-sans-serif:
   -apple-system,
   BlinkMacSystemFont,
@@ -36,10 +36,12 @@ body {
   background: lightgrey;
 }
 
-.nav-item a {
-  color: black;
+ul.nav a {
+  text-decoration: none;
+  .nav-item {
+    color: black;
+  }
 }
-
 
 #fileName {
   padding-bottom: 8px;
