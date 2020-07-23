@@ -72,7 +72,6 @@ def display_upload(filename):
 
 @app.route('/downloads/<download>')
 def display_download(download):
-	# return send_from_directory(filename)
 	return send_from_directory(app.config['IMAGE_DOWNLOADS'], download)
 
 @app.route('/preview/<filename>', methods=['GET'])
