@@ -9,7 +9,7 @@ from functools import wraps, update_wrapper
 from tensorflow.python.framework import ops
 from tensorflow.python.training import saver as saver_lib
 from notes import build_model_input, get_chord_predictions
-from frames import partitionImage, resize, normalize#, label_frame_with_chords_images
+from frames import partitionImage, resize, normalize, isMusicalImage#, label_frame_with_chords_images
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 import tensorflow as tf
@@ -243,8 +243,10 @@ def get_notes_from_frame(img):
 def predict():
     if request.method == 'POST':
         filename = request.form['preview-image']
+        file_name_full_path = os.path.join(app.config["IMAGE_UPLOADS"], filename)
 
-        image1 = Image.open(filename).convert('L')
+        #image1 = Image.open(filename).convert('L')
+        image1 = Image.open(file_name_full_path).convert('L')
 
         #we assume the color at pixel 0,0 is the color of the background
         color = image1.getpixel((0,0))
@@ -262,6 +264,7 @@ def predict():
 
             # for i in range(index - 1):
             frame_image = Image.open(fname).convert('L')
+            isMusic = isMusicalImage(frame_image)
             w, h = frame_image.size
             if w < 500 or h < 75:
                 converted_array.append(frame_image)

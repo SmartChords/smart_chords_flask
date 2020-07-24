@@ -1,4 +1,5 @@
 import cv2
+import re
 import numpy as np
 from PIL import Image
 # from PIL import ImageDraw
@@ -108,29 +109,71 @@ def trim(im):
     else:
         print("No image detected")
 
-# def isMusicalImage(image_to_convert):
-#     indicator_img = Image.open("indicator.png").convert('L')
-#     indicator_w = indicator_img.width
-#     indicator_h = indicator_img.height
-#     image_h = image_to_convert.height
-#     ratio = float((image_h / indicator_h))
-#     resize_w = int(indicator_w * ratio)
-#     resize_h = int(indicator_h * ratio)
-#     resize_img = cv2.resize(np.array(indicator_img), (resize_w, resize_h))
+def subimg_location(haystack, needle):
+    arr_h = np.asarray(haystack)
+    arr_n = np.asarray(needle)
+
+    sub_array = np.array_split(arr_h, needle.size)
+
+    y_h, x_h = arr_h.shape[:2]
+    y_n, x_n = arr_n.shape[:2]
+
+    xstop = x_h - x_n + 1
+    ystop = y_h - y_n + 1
+
+    matches = []
+    for xmin in range(0, xstop):
+        for ymin in range(0, ystop):
+            xmax = xmin + x_n
+            ymax = ymin + y_n
+
+            arr_s = arr_h[ymin:ymax, xmin:xmax]     # Extract subimage
+            arr_t = (arr_s == arr_n)                # Create test matrix
+            hits = np.count_nonzero(arr_t == True)
+            misses = np.count_nonzero(arr_t == False)
+            total = hits + misses
+            percentage = float(hits/total)
+            print (percentage)
+            if (percentage > 0.9):
+                matches.append(xmin, ymin)
+            if arr_t.all():                         # Only consider exact matches
+                matches.append((xmin,ymin))
+
+    return matches
+
+def isMusicalImage(image_to_convert):
+     indicator_img = Image.open("indicator.png").convert('L')
+     indicator_w = indicator_img.width
+     indicator_h = indicator_img.height
+     image_h = image_to_convert.height
+     ratio = float((image_h / indicator_h))
+     resize_w = int(indicator_w * ratio)
+     resize_h = int(indicator_h * ratio)
+     resize_img = cv2.resize(np.array(indicator_img), (resize_w, resize_h))
+     needle = indicator_img.resize((resize_w, resize_h), Image.ANTIALIAS)
+     #if needle != None:
+         #matches = subimg_location(image_to_convert, needle)
 #
 #
-#     result = cv2.matchTemplate(np.array(image_to_convert),resize_img,cv2.TM_CCOEFF_NORMED)
-#     threshold = 0.8
-#     flag = False
-#     probability = np.amax(result)
-#     if np.amax(result) > threshold:
-#         flag = True
-#     min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
-#     if (min_loc < max_loc):
-#         flag = True
+     image_to_convert = crop(image_to_convert, 255)
+     result = cv2.matchTemplate(np.array(image_to_convert),resize_img,cv2.TM_CCOEFF_NORMED)
+     ## [normalize]
+     cv2.normalize( result, result, 0, 1, cv2.NORM_MINMAX, -1 )
+     confidence = 0.95
+     match_indices = np.arange(result.size)[(result>confidence).flatten()]
+     print (np.unravel_index(match_indices,result.shape))
+
+     threshold = 0.8
+     flag = False
+     probability = np.amax(result)
+     if np.amax(result) > threshold:
+         flag = True
+     min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
+     if (min_loc < max_loc):
+         flag = True
 #     unraveled = np.unravel_index(result.argmax(),result.shape)
 #
-#     return flag
+     return flag
 
 
 # def label_frame_with_chords_images(frame, chords, coords):
