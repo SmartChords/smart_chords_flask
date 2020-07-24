@@ -5,7 +5,7 @@
 html,
 body {
   height: 100%;
-  font-size: 1.25rem;
+  font-size: 1.10rem;
   $font-family-sans-serif:
   -apple-system,
   BlinkMacSystemFont,
@@ -21,8 +21,12 @@ body {
 }
 
 .header {
-  background-image: url('../img/music_notes.jpeg');
-  margin-bottom: 0px;
+  background-image: url('../img/header.jpg');
+  background-size: cover;
+}
+
+#header-title {
+  color: white;
 }
 
 #main:after {
@@ -36,10 +40,15 @@ body {
   background: lightgrey;
 }
 
-.nav-item a {
-  color: black;
+ul.nav a {
+  text-decoration: none;
 }
 
+ul a .list-group-item {
+  color: #1c77ac;
+  font-size: 1.2rem;
+
+}
 
 #fileName {
   padding-bottom: 8px;
@@ -145,8 +154,7 @@ body {
     cursor: pointer;
 }
 .contactFrm input[type="submit"]:hover {
-    background: none;
-    color: black;
+    background: #1dbab4;
 }
 
 .q, .a {

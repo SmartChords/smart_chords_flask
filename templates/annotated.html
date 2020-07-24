@@ -1,18 +1,12 @@
-{% extends "layout.html" %}
-
-{% block content %}
-  <div class="col-sm-1"></div>
-    <div class="col-sm-6">
-      {% if download %}
-        <h2 class="text-center">Your transcription is complete!</h2>
-        <p class="text-center">You can view the image below or download the file for later.</p>
-
-        <div class="row image-row">
-          <img width="600" src="{{ url_for('display_download', download=download) }}">
-        </div>
-      {% else %}
-        <h2 class="text-center">Whoops! Something went wrong. :( </h2>
-        <p class="text-center">No image detected. Try again on the Home page.</p>
-      {% endif %}
+<div class="col-sm-12">
+  {% if download %}
+    <h2 class="text-center">Your transcription is complete!</h2>
+    <p class="text-center">You can view the image below or download the file for later.</p>
+    <div class="row image-row">
+      <img src="{{ url_for('display_download', download=download) }}" width="600px">
     </div>
-{% endblock %}
+  {% else %}
+    <h2 class="text-center">Whoops! Something went wrong. :( </h2>
+    <p class="text-center">No image detected. Try again on the Home page.</p>
+  {% endif %}
+</div>
