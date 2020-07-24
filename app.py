@@ -20,13 +20,13 @@ from PIL import ImageDraw
 from PIL import ImageChops
 from PIL import ImageFont
 
-# mail = Mail()
+mail = Mail()
 
 app = Flask(__name__)
 
 app.config.from_object('config.Config')
 
-# mail.init_app(app)
+mail.init_app(app)
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -84,13 +84,26 @@ def annotated(download):
 
 @app.route('/contact', methods=['GET', 'POST'])
 def contact():
-    form = ContactForm()
-    if form.validate_on_submit():
-        # TODO: SET UP EMAILING FUNCTIONALITY
-        return render_template('contact.html', success=True)
-
+  form = ContactForm()
+ 
+  if request.method == 'POST':
+    if form.validate() == False:
+      flash('All fields are required.')
+      return render_template('contact.html', form=form)
+    else:
+      msg = Message(form.subject.data, sender='contact@smartchords.com', recipients=[form.email.data]
+      msg.body = """
+      From: %s &lt;%s&gt;
+      %s
+      """ % (form.name.data, form.email.data, form.message.data)
+      mail.send(msg)
+ 
+      return render_template('contact.html', success=True)
+ 
+  elif request.method == 'GET':
     return render_template('contact.html', form=form)
-
+    
+    
 @app.route('/help')
 def help():
     return render_template('help.html')
