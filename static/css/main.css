@@ -21,8 +21,12 @@ body {
 }
 
 .header {
-  background-image: url('../img/music_notes.jpeg');
-  margin-bottom: 0px;
+  background-image: url('../img/header.jpg');
+  background-size: cover;
+}
+
+#header-title {
+  color: white;
 }
 
 #main:after {
@@ -38,9 +42,13 @@ body {
 
 ul.nav a {
   text-decoration: none;
-  .nav-item {
-    color: black;
-  }
+}
+
+ul a .list-group-item {
+  color: #1c77ac;
+  /* border: 2px solid #1561ad; */
+  font-size: 1.2rem;
+
 }
 
 #fileName {
@@ -147,8 +155,7 @@ ul.nav a {
     cursor: pointer;
 }
 .contactFrm input[type="submit"]:hover {
-    background: none;
-    color: black;
+    background: #1dbab4;
 }
 
 .q, .a {
