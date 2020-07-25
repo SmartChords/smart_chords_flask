@@ -264,7 +264,7 @@ def predict():
 
             # for i in range(index - 1):
             frame_image = Image.open(fname).convert('L')
-            isMusic = isMusicalImage(frame_image)
+            #isMusic = isMusicalImage(frame_image)
             w, h = frame_image.size
             if w < 500 or h < 75:
                 converted_array.append(frame_image)
