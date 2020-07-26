@@ -1,9 +1,14 @@
 <div class="col-sm-12">
   {% if download %}
     <h2 class="text-center">Your transcription is complete!</h2>
-    <p class="text-center">You can view the image below or download the file for later.</p>
-    <div class="row image-row">
-      <img src="{{ url_for('display_download', download=download) }}" width="600px">
+    <div class="row button-row">
+      <p class="text-center">You can view the image below or download the file for later.</p>
+      <span class="py-1">
+        <a type="button" class="download-btn" href="{{ url_for('static', filename= 'img/downloads/' + download) }}" download>Download File Here</a>
+      </span>
+    </div>
+    <div class="py-4 row image-row">
+      <img src="{{ url_for('display_download', download=download) }}" class="my-3" width="600px">
     </div>
   {% else %}
     <h2 class="text-center">Whoops! Something went wrong. :( </h2>
