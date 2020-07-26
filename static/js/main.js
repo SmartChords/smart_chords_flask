@@ -21,7 +21,7 @@ function sendToPreview() {
     if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
       document.querySelector('#loading-block').style.display = 'none';
       var annotation = document.querySelector('#annotated-block');
-      document.querySelector('#download-link-option').style.display = '';
+      console.log(this.responseText);
       annotation.innerHTML = this.responseText;
     } else if (this.status === 500) {
       window.location.pathname = '/error';
