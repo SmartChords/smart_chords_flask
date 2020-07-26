@@ -141,7 +141,40 @@ def subimg_location(haystack, needle):
 
     return matches
 
+def hasMusicalKey(image_to_convert):
+    matches = []
+    indicator_img = Image.open("indicator.png").convert('L')
+    subimg_location(image_to_convert, indicator_img)
+    image_to_convert = crop(image_to_convert, 255)
+    indicator_w = indicator_img.width
+    indicator_h = indicator_img.height
+    image_h = image_to_convert.height
+    ratio = float((image_h / indicator_h))
+    resize_w = int(indicator_w * ratio)
+    resize_h = int(indicator_h * ratio)
+    resize_img = indicator_img.resize((resize_w, resize_h), Image.ANTIALIAS)
+    resize_img = crop (resize_img, 255)
+    slices = (int) (image_to_convert.width / resize_img.width)
+    if ((int) (image_to_convert.width % resize_img.width) != 0):
+        slices = slices + 1
+    arr_h = np.asarray(image_to_convert)
+    arr_n = np.asarray(resize_img)
+
+    sub_images = np.array_split(arr_h, resize_img.size)
+    for arr_s in sub_images:
+        arr_t = (arr_s == arr_n)                # Create test matrix
+        hits = np.count_nonzero(arr_t == True)
+        misses = np.count_nonzero(arr_t == False)
+        total = hits + misses
+        percentage = float(hits/total)
+        print (percentage)
+        if (percentage > 0.9):
+            matches.append(xmin, ymin)
+
+    return matches
+
 def isMusicalImage(image_to_convert):
+     #hasMusicalKey(image_to_convert)
      indicator_img = Image.open("indicator.png").convert('L')
      indicator_w = indicator_img.width
      indicator_h = indicator_img.height
@@ -155,7 +188,7 @@ def isMusicalImage(image_to_convert):
          #matches = subimg_location(image_to_convert, needle)
 #
 #
-     image_to_convert = crop(image_to_convert, 255)
+     #image_to_convert = crop(image_to_convert, 255)
      result = cv2.matchTemplate(np.array(image_to_convert),resize_img,cv2.TM_CCOEFF_NORMED)
      ## [normalize]
      cv2.normalize( result, result, 0, 1, cv2.NORM_MINMAX, -1 )
