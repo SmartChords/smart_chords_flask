@@ -15,7 +15,7 @@ from keras.utils.np_utils import to_categorical
 
 
 # loading the dataset
-dataset = pd.read_csv("chord_data/chord_training_data.csv")
+dataset = pd.read_csv("chord_data/chord_data_v2.csv")
 data = dataset.values
 X = data[:, :-1].astype(str)
 y = data[:, -1].astype(str)
@@ -41,7 +41,7 @@ def create_model():
     keras.layers.Dense(20, activation='relu'),
     keras.layers.Dense(25, activation='relu'),
     keras.layers.Dense(15, activation='relu'),
-    keras.layers.Dense(32, activation = 'softmax')
+    keras.layers.Dense(30, activation = 'softmax')
   ])
 
   model.compile(optimizer='adam',
@@ -53,7 +53,7 @@ def create_model():
 ## define the model
 model = create_model()
 # fit on the training set
-model.fit(X_train, y_train, epochs = 250, batch_size = 25, verbose=2)
+model.fit(X_train, y_train, epochs = 350, batch_size = 35, verbose=2)
 # predict on test set
 yhat = model.predict(X_test)
 

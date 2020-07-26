@@ -19,12 +19,10 @@ function sendToPreview() {
   document.querySelector('#loading-block').style.display = '';
   xhr.onreadystatechange = function() {
     if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
-      console.log("it worked!", this.responseText);
       document.querySelector('#loading-block').style.display = 'none';
       var annotation = document.querySelector('#annotated-block');
       annotation.innerHTML = this.responseText;
     } else if (this.status === 500) {
-  	  console.log("no work", this.responseText);
       window.location.pathname = '/error';
   	}
   }

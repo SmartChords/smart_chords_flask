@@ -10,37 +10,18 @@
     <div id="main">
       <div class="header jumbotron jumbotron-fluid">
         <div class="container">
-          <h1 style="color: white;" class="display-4">SmartChords</h1>
+          <h1 id="header-title" class="py-2 display-3 font-weight-bold">SmartChords</h1>
         </div>
       </div>
 <!-- end header -->
-      <div class="container" style="margin-top:30px">
-        <div class="row" style="padding-left: 0px;">
+      <div class="container mt-3">
+        <div class="row">
           <nav class="col-sm-3">
-            <ul class="nav flex-column list-group">
-              <li class="nav-item list-group-item list-group-item-action">
-                <a href="{{ url_for('index') }}">Home</a>
-              </li>
-              <li class="nav-item list-group-item list-group-item-action">
-                <a href="{{ url_for('contact') }}">Contact Us</a>
-              </li>
-              <li class="nav-item list-group-item list-group-item-action">
-                <a href="{{ url_for('help') }}">Help/FAQ</a>
-              </li>
-            </ul>
-            {% if download %}
-              <ul class="nav flex-column list-group download-link">
-                <li class="nav-item list-group-item list-group-item-action">
-                  <a href="{{ url_for('display_download', download=download) }}" download>Download File Here</a>
-                </li>
-              </ul>
-            {% endif %}
+            {% include "nav-menu.html" %}
           </nav>
-          <!-- end navbar -->
 
           {% block content %}
           {% endblock %}
-
 
         </div> <!-- end body row -->
       </div>  <!-- end body container -->
@@ -52,7 +33,7 @@
      <script src="{{ url_for('static', filename='js/main.js') }}"> </script>
 
     <div id="footer" class="text-center text-muted">
-      <div class="pb-2 pt-5">
+      <div class="pb-3 pt-4">
         <hr id="footer_hr">
       	<span class="pr-3">SmartChords&copy;2020</span><span>|</span><span class="pl-3"><a href="mailto:contact@smartchords.com?subject=Feedback">Send Feedback</a></span>
       </div>

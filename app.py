@@ -1,11 +1,9 @@
 import os
-import os.path
 from os import path
-from flask import Flask, render_template, request, flash, redirect, jsonify, send_from_directory, send_file, make_response, session
+from flask import Flask, render_template, request, flash, redirect, send_from_directory, send_file, make_response, jsonify
 from werkzeug.utils import secure_filename
 from forms import ContactForm
 from flask_mail import Message, Mail
-from functools import wraps, update_wrapper
 from tensorflow.python.framework import ops
 from tensorflow.python.training import saver as saver_lib
 from notes import build_model_input, get_chord_predictions
@@ -20,13 +18,13 @@ from PIL import ImageDraw
 from PIL import ImageChops
 from PIL import ImageFont
 
-# mail = Mail()
+mail = Mail()
 
 app = Flask(__name__)
 
 app.config.from_object('config.Config')
 
-# mail.init_app(app)
+mail.init_app(app)
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -72,8 +70,7 @@ def display_upload(filename):
 
 @app.route('/downloads/<download>')
 def display_download(download):
-	# return send_from_directory(filename)
-	return send_from_directory(app.config['IMAGE_DOWNLOADS'], download)
+    return send_from_directory(app.config['IMAGE_DOWNLOADS'], download)
 
 @app.route('/preview/<filename>', methods=['GET'])
 def preview(filename):
@@ -85,12 +82,25 @@ def annotated(download):
 
 @app.route('/contact', methods=['GET', 'POST'])
 def contact():
-    form = ContactForm()
-    if form.validate_on_submit():
-        # TODO: SET UP EMAILING FUNCTIONALITY
-        return render_template('contact.html', success=True)
+  form = ContactForm()
 
+  if request.method == 'POST':
+    if form.validate() == False:
+      flash('All fields are required.')
+      return render_template('contact.html', form=form)
+    else:
+      msg = Message(form.subject.data, sender='contact@smartchords.com', recipients=[form.email.data])
+      msg.body = """
+      From: %s &lt;%s&gt;
+      %s
+      """ % (form.name.data, form.email.data, form.message.data)
+      mail.send(msg)
+
+      return render_template('contact.html', success=True)
+
+  elif request.method == 'GET':
     return render_template('contact.html', form=form)
+
 
 @app.route('/help')
 def help():
@@ -155,41 +165,7 @@ WIDTH_REDUCTION, HEIGHT = sess.run([width_reduction_tensor, height_tensor])
 
 decoded, _ = tf.nn.ctc_greedy_decoder(logits, seq_len)
 
-def send_img(filename):
-    return send_from_directory(app.config['IMAGE_UPLOADS'], filename)
-
-
-def doConversion(image_to_convert, chords_list):
-#     #isMusicalImage(image_to_convert)
-    # img = image_to_convert
-#     image = image_to_convert;
-    # image = Image.open(img).convert('L')
-    # image = np.array(image)
-    # image = resize(image, HEIGHT)
-    # image = normalize(image)
-#     image = np.asarray(image).reshape(1,image.shape[0],image.shape[1],1)
-#
-#     seq_lengths = [ image.shape[2] / WIDTH_REDUCTION ]
-#     prediction = sess.run(decoded,
-#                         feed_dict={
-#                             input: image,
-#                             seq_len: seq_lengths,
-#                             rnn_keep_prob: 1.0,
-#                         })
-#     str_predictions = sparse_tensor_to_strs(prediction)
-#
-#     array_of_notes = []
-#
-#     for w in str_predictions[0]:
-#       array_of_notes.append(int2word[w])
-#     notes=[]
-#     for i in array_of_notes:
-#       if i[0:5]=="note-":
-#           if not i[6].isdigit():
-#               notes.append(i[5:7])
-#           else:
-#               notes.append(i[5])
-
+def add_chord_label(image_to_convert, chords_list):
     img = image_to_convert
     img = Image.open(img).convert('L')
     size = (img.size[0], int(img.size[1]*1.5))
@@ -198,7 +174,6 @@ def doConversion(image_to_convert, chords_list):
     img_arr = np.array(layer)
     height = int(img_arr.shape[0])
     width = int(img_arr.shape[1])
-    # print(img_arr.shape[0])
     draw = ImageDraw.Draw(layer)
     font = ImageFont.truetype("Aaargh.ttf", 20)
     j = width / 5
@@ -245,7 +220,6 @@ def predict():
         filename = request.form['preview-image']
         file_name_full_path = os.path.join(app.config["IMAGE_UPLOADS"], filename)
 
-        #image1 = Image.open(filename).convert('L')
         image1 = Image.open(file_name_full_path).convert('L')
 
         #we assume the color at pixel 0,0 is the color of the background
@@ -266,17 +240,14 @@ def predict():
             frame_image = Image.open(fname).convert('L')
             isMusic = isMusicalImage(frame_image)
             w, h = frame_image.size
-            if w < 500 or h < 75:
+            if w < 500 or h < 65:
                 converted_array.append(frame_image)
                 chords_dict[index] = []
                 index = index + 1
                 continue
 
-            #notes is an array of note values that ideally would look something like this: ['key-3.821', '0.664', '0.883', '0.664', '0.415', '0.498','0.581', 'BAR', '0.581', '0.664', '0.581', '0.249', '0.332', '0.415', '0.498', 'BAR', '0.581', '0.664', '0.883', '0.996', '0.883', '0.664', '0.581', '0.415']
-
             notes = get_notes_from_frame(frame_image)
             if len(notes) == 0:
-                print(f"no notes in {index}")
                 converted_array.append(frame_image)
                 chords_dict[index] = []
                 index = index + 1
@@ -286,9 +257,7 @@ def predict():
                 c = get_chord_predictions(index)
                 chords_dict[index] = c
 
-            print(chords_dict)
-
-            converted = doConversion(fname, chords_dict[index])
+            converted = add_chord_label(fname, chords_dict[index])
             converted.save(str(index) +"_converted.png")
             converted_array.append(converted)
             index = index + 1
@@ -305,20 +274,19 @@ def predict():
       	    h_index = h_index + c.height
 
         dst_name = "converted_" + filename
-        # dst_name = "converted_annotatedtest.png"
-        # dst.save("./static/img/downloads/" + dst_name)
-
-        # dst.save(dst_name)
-        # dst.save(os.path.join(app.config["IMAGE_DOWNLOADS"], dst_name))
         dst.save(os.path.join(app.config["IMAGE_DOWNLOADS"], dst_name))
 
         for n in range(index):
             os.remove( str(n) + ".png" )
-            if ( os.path.exists(str(n) + "_converted.png") ) :
+            if ( os.path.exists(str(n) + "_converted.png") ):
                 os.remove( str(n) + "_converted.png" )
-            else :
+            else:
                 None
 
+            if ( os.path.exists("chord_data/" + str(n) + ".csv") ):
+                os.remove("chord_data/" + str(n) + ".csv")
+            else:
+                None
 
         return render_template('annotated.html', download=dst_name)
 

@@ -5,7 +5,7 @@
 html,
 body {
   height: 100%;
-  font-size: 1.25rem;
+  font-size: 1.10rem;
   $font-family-sans-serif:
   -apple-system,
   BlinkMacSystemFont,
@@ -21,8 +21,12 @@ body {
 }
 
 .header {
-  background-image: url('../img/music_notes.jpeg');
-  margin-bottom: 0px;
+  background-image: url('../img/header.jpg');
+  background-size: cover;
+}
+
+#header-title {
+  color: white;
 }
 
 #main:after {
@@ -36,18 +40,28 @@ body {
   background: lightgrey;
 }
 
-.nav-item a {
-  color: black;
+ul.nav a {
+  text-decoration: none;
 }
 
+ul a .list-group-item {
+  color: #1c77ac;
+  font-size: 1.2rem;
+
+}
 
 #fileName {
   padding-bottom: 8px;
   word-wrap: normal;
 }
 
-.preview-text, .buttons-list {
+.preview-text {
   padding: 7px;
+}
+
+.buttons-list {
+  margin: auto;
+  width: 100%;
 }
 
 .button-row span {
@@ -70,15 +84,29 @@ body {
   animation: spin 2s linear infinite;
 }
 
-.download-link {
-  margin-top: 10px;
-  border: 2px solid #3366cc
+.download-btn {
+    outline: none;
+    color: #FFFFFF;
+    padding: 0.5em;
+    -webkit-appearance: none;
+    background: black;
+    transition: 0.5s all;
+    border: 2px solid black;
+    -webkit-transition: 0.5s all;
+    transition: 0.5s all;
+    -moz-transition: 0.5s all;
+    width: 47%;
+    cursor: pointer;
+}
+.download-btn:hover {
+    background: #1dbab4;
+    color: white;
+    text-decoration: none;
 }
 
 .image-row img {
   margin: auto;
   border: 1px solid #c1c1c1;
-  margin-bottom: 20px;
 }
 
 /* Safari */
@@ -145,8 +173,7 @@ body {
     cursor: pointer;
 }
 .contactFrm input[type="submit"]:hover {
-    background: none;
-    color: black;
+    background: #1dbab4;
 }
 
 .q, .a {
