@@ -17,29 +17,11 @@
       <div class="container mt-3">
         <div class="row">
           <nav class="col-sm-3">
-            <ul class="nav flex-column list-group">
-              <a href="{{ url_for('index') }}">
-                <li class="nav-item list-group-item list-group-item-action">Home</li>
-              </a>
-              <a href="{{ url_for('contact') }}">
-                <li class="nav-item list-group-item list-group-item-action">Contact Us</li>
-              </a>
-              <a href="{{ url_for('help') }}">
-                <li class="nav-item list-group-item list-group-item-action">Help/FAQ</li>
-              </a>
-            </ul>
-            <ul id="download-link-option" class="nav flex-column list-group download-link" style="display:none;">
-              <a href="{{ url_for('display_download', download=download) }}" download>
-                <li class="nav-item list-group-item list-group-item-action">
-                Download File Here</li>
-              </a>
-            </ul>
+            {% include "nav-menu.html" %}
           </nav>
-          <!-- end navbar -->
 
           {% block content %}
           {% endblock %}
-
 
         </div> <!-- end body row -->
       </div>  <!-- end body container -->
