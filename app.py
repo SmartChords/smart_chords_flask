@@ -191,12 +191,7 @@ def add_chord_label(image_to_convert, chords_list):
     if (drawImage) :
         w, h = layer.size
         
-        chord = Image.open("./static/img/chords/eb-min.png")
-        chord = resize_chord(chord)
-        chord.save("./static/img/chords/eb-min.png")
-        chord.close()
-        
-        # Kludge to get rid of some padding
+        # Kludge to get rid of some padding - TODO clean this up.
         w -= 240
         j = 120
         for i in chords_list:
