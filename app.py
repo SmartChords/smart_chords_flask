@@ -170,23 +170,69 @@ decoded, _ = tf.nn.ctc_greedy_decoder(logits, seq_len)
 def send_img(filename):
     return send_from_directory(app.config['IMAGE_UPLOADS'], filename)
 
-
+def resize_chord(img):
+    basewidth = 50
+    #wpercent = (basewidth/float(img.size[0]))
+    #hsize = int((float(aImg.size[1])*float(wpercent)))
+    img = img.resize((basewidth, 70), Image.ANTIALIAS)
+    return img
+ 
 def add_chord_label(image_to_convert, chords_list):
     img = image_to_convert
     img = Image.open(img).convert('L')
-    size = (img.size[0], int(img.size[1]*1.5))
+    
+    # Grow the image height to make room for the chord image.
+    size = (img.size[0], int(img.size[1]+70))
     layer = Image.new('RGB', size, (255,255,255))
-    layer.paste(img, box=None)
-    img_arr = np.array(layer)
-    height = int(img_arr.shape[0])
-    width = int(img_arr.shape[1])
     draw = ImageDraw.Draw(layer)
-    font = ImageFont.truetype("Aaargh.ttf", 20)
-    j = width / 5
-    for i in chords_list:
-      draw.text((j, height-40), i, (0,0,0), font=font)
-      j+= (width / (len(chords_list) + 4))
-
+    
+    # Flag "drawImage": set this to True to draw chord images, to False to draw text names
+    drawImage = True
+    if (drawImage) :
+        w, h = layer.size
+        
+        chord = Image.open("./static/img/chords/eb-min.png")
+        chord = resize_chord(chord)
+        chord.save("./static/img/chords/eb-min.png")
+        chord.close()
+        
+        # Kludge to get rid of some padding
+        w -= 240
+        j = 120
+        for i in chords_list:
+            # Paste each chord image to the layer.        
+            # dst.save(os.path.join(app.config["IMAGE_DOWNLOADS"], dst_name))
+            
+            # If chord file exists, then draw it
+            if ( os.path.exists("./static/img/chords/" + str(i) + ".png") ) :
+                chord = Image.open("./static/img/chords/" + str(i) + ".png")
+                chord = resize_chord(chord)
+                chord.save("./static/img/chords/" + str(i) + ".png")
+                layer.paste(chord, ( j, 10 ))
+                j += int( w / len(chords_list) )
+                chord.close()
+            
+            # Else draw the text of the chord name
+            else :            
+                font = ImageFont.truetype("Aaargh.ttf", 20)
+                draw.text((j, 30), i, (0,0,0), font=font)
+                j += int( w / len(chords_list) )
+            
+        # Paste the frame layer to the bottom of the image.   
+        layer.paste(img, (0, 70))
+    
+    else :
+        img_arr = np.array(layer)
+        height = int(img_arr.shape[0])
+        width = int(img_arr.shape[1])
+        draw = ImageDraw.Draw(layer)
+        
+        font = ImageFont.truetype("Aaargh.ttf", 20)
+        j = width / 5
+        for i in chords_list:
+          draw.text((j, height-40), i, (0,0,0), font=font)
+          j+= (width / (len(chords_list) + 4))
+    
     return layer
 
 def get_notes_from_frame(img):
@@ -272,25 +318,26 @@ def predict():
 
         combined_width = converted_array[0].width
         dst = Image.new('L', (combined_width, converted_height))
+        
+        #this loop stictches back the parts, and saves the result
         h_index = 0
-        for c in converted_array: #this loop stictches back the parts, and saves the result
+        for c in converted_array:
       	    dst.paste(c, (0, h_index))
       	    h_index = h_index + c.height
 
         dst_name = "converted_" + filename
-        # dst_name = "converted_annotatedtest.png"
-        # dst.save("./static/img/downloads/" + dst_name)
-
-        # dst.save(dst_name)
-        # dst.save(os.path.join(app.config["IMAGE_DOWNLOADS"], dst_name))
         dst.save(os.path.join(app.config["IMAGE_DOWNLOADS"], dst_name))
+        
+        # Flag "removeFiles" set this to True to cleanup after transcribing
+        removeFiles = True
+        if (removeFiles) :
+            for n in range(index):
+                os.remove( str(n) + ".png" )
+                if ( os.path.exists(str(n) + "_converted.png") ) :
+                    os.remove( str(n) + "_converted.png" )
+                else :
+                    None
 
-        for n in range(index):
-            os.remove( str(n) + ".png" )
-            if ( os.path.exists(str(n) + "_converted.png") ) :
-                os.remove( str(n) + "_converted.png" )
-            else :
-                None
 
 
         return render_template('annotated.html', download=dst_name)
