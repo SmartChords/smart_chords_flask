@@ -1,11 +1,9 @@
 import os
-import os.path
 from os import path
-from flask import Flask, render_template, request, flash, redirect, jsonify, send_from_directory, send_file, make_response, session
+from flask import Flask, render_template, request, flash, redirect, send_from_directory, send_file, make_response, jsonify
 from werkzeug.utils import secure_filename
 from forms import ContactForm
 from flask_mail import Message, Mail
-from functools import wraps, update_wrapper
 from tensorflow.python.framework import ops
 from tensorflow.python.training import saver as saver_lib
 from notes import build_model_input, get_chord_predictions
@@ -72,7 +70,7 @@ def display_upload(filename):
 
 @app.route('/downloads/<download>')
 def display_download(download):
-	return send_from_directory(app.config['IMAGE_DOWNLOADS'], download)
+    return send_from_directory(app.config['IMAGE_DOWNLOADS'], download)
 
 @app.route('/preview/<filename>', methods=['GET'])
 def preview(filename):
@@ -85,7 +83,7 @@ def annotated(download):
 @app.route('/contact', methods=['GET', 'POST'])
 def contact():
   form = ContactForm()
- 
+
   if request.method == 'POST':
     if form.validate() == False:
       flash('All fields are required.')
@@ -97,13 +95,13 @@ def contact():
       %s
       """ % (form.name.data, form.email.data, form.message.data)
       mail.send(msg)
- 
+
       return render_template('contact.html', success=True)
- 
+
   elif request.method == 'GET':
     return render_template('contact.html', form=form)
-    
-    
+
+
 @app.route('/help')
 def help():
     return render_template('help.html')
@@ -166,9 +164,6 @@ logits = tf.compat.v1.get_collection("logits")[0]
 WIDTH_REDUCTION, HEIGHT = sess.run([width_reduction_tensor, height_tensor])
 
 decoded, _ = tf.nn.ctc_greedy_decoder(logits, seq_len)
-
-def send_img(filename):
-    return send_from_directory(app.config['IMAGE_UPLOADS'], filename)
 
 def resize_chord(img):
     basewidth = 50
@@ -265,8 +260,8 @@ def get_notes_from_frame(img):
 def predict():
     if request.method == 'POST':
         filename = request.form['preview-image']
-
-        image1 = Image.open(filename).convert('L')
+        file_name_full_path = os.path.join(app.config["IMAGE_UPLOADS"], filename)
+        image1 = Image.open(file_name_full_path).convert('L')
 
         #we assume the color at pixel 0,0 is the color of the background
         color = image1.getpixel((0,0))
@@ -333,7 +328,10 @@ def predict():
                 else :
                     None
 
-
+                if ( os.path.exists("chord_data/" + str(n) + ".csv") ):
+                    os.remove("chord_data/" + str(n) + ".csv")
+                else:
+                    None
 
         return render_template('annotated.html', download=dst_name)
 
