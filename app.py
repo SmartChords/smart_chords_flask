@@ -177,7 +177,7 @@ def add_chord_label(image_to_convert, chords_list):
     img = Image.open(img).convert('L')
     
     # Grow the image height to make room for the chord image.
-    size = (img.size[0], int(img.size[1]+70))
+    size = (img.size[0], int(img.size[1]+90))
     layer = Image.new('RGB', size, (255,255,255))
     draw = ImageDraw.Draw(layer)
     
@@ -209,7 +209,7 @@ def add_chord_label(image_to_convert, chords_list):
                 j += int( w / len(chords_list) )
             
         # Paste the frame layer to the bottom of the image.   
-        layer.paste(img, (0, 70))
+        layer.paste(img, (0, 90))
     
     else :
         img_arr = np.array(layer)
