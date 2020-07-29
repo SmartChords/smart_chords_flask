@@ -36,15 +36,24 @@ def findNextBlackLine(im, start_line, color):
         if line.tobytes() != whiteLine.tobytes():
             return y
     return -1
+    
+def createWhiteImage(mode, width, height, color):
+    whiteImage = Image.new(mode, (width, height), color)
+    return whiteImage
 
 def partitionImage(im, color):
     next_white_line = 0
     next_black_line = 0
     array_img = []
+    array_white = []
     more = True
     while more:
         next_black_line = findNextBlackLine(im, next_black_line, color)
         if next_black_line != -1:
+            num_white_lines = next_black_line - next_white_line;
+            if (num_white_lines > 0):
+                whiteImage = createWhiteImage(im.mode, im.width, num_white_lines, color)
+                array_white.append(whiteImage)
             next_white_line = findNextWhiteLine(im, next_black_line, color)
             if next_white_line != -1:
                 sub_img = im.crop((0, next_black_line, im.width, next_white_line -1))
@@ -59,7 +68,27 @@ def partitionImage(im, color):
 
             if len(array_img) == 0:
                 array_img.append(im)
-    return array_img
+    
+    num_whites = len(array_white)
+    num_blacks = len(array_img)
+    if (num_blacks > num_whites):
+        added_lines = num_blacks - num_whites
+        for i in range(added_lines):
+            added_white = createWhiteImage(im.mode, im.width, 5, color)
+            array_white.append(added_white)
+            
+    return array_img, array_white
+    
+def getStartofBlack(im, white):
+    bg = Image.new(im.mode, im.size, white)
+    diff = ImageChops.difference(im, bg)
+    bbox = diff.getbbox()
+    if bbox:
+        return bbox[0], bbox[1] # returns the left and upper coordinate of the first non white pixel
+    else:
+        return 0,0
+
+
 
 #crop function, used by the partition (horizontal) algorithm
 def crop(im, white):
