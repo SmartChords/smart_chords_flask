@@ -271,3 +271,5 @@ def isMusicalImage(image_to_convert):
     # aImg = aImg.resize((basewidth, hsize), Image.ANTIALIAS)
     #
     # aImg.save("./static/img/downloads/annotated.png")
+#     return flag
+
