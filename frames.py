@@ -36,7 +36,7 @@ def findNextBlackLine(im, start_line, color):
         if line.tobytes() != whiteLine.tobytes():
             return y
     return -1
-    
+
 def createWhiteImage(mode, width, height, color):
     whiteImage = Image.new(mode, (width, height), color)
     return whiteImage
@@ -68,7 +68,7 @@ def partitionImage(im, color):
 
             if len(array_img) == 0:
                 array_img.append(im)
-    
+
     num_whites = len(array_white)
     num_blacks = len(array_img)
     if (num_blacks > num_whites):
@@ -76,9 +76,9 @@ def partitionImage(im, color):
         for i in range(added_lines):
             added_white = createWhiteImage(im.mode, im.width, 5, color)
             array_white.append(added_white)
-            
+
     return array_img, array_white
-    
+
 def getStartofBlack(im, white):
     bg = Image.new(im.mode, im.size, white)
     diff = ImageChops.difference(im, bg)
@@ -236,69 +236,3 @@ def isMusicalImage(image_to_convert):
 #     unraveled = np.unravel_index(result.argmax(),result.shape)
 #
      return flag
-
-
-# def label_frame_with_chords_images(frame, chords, coords):
-    # FROM HERE, chords WILL BE AN ARRAY OF NAMES THAT WE WILL USE TO QUERY THE LOOKUP TABLE
-    # # IT WILL LOOK SOMETHING LIKE THIS: ['c#-min', 'g#-min', 'D-Maj7', 'D-Maj7', 'c#-min', 'B-Maj7']
-    # # OR LIKE THIS: ['', '', 'c#-min', 'g#-min', '', 'D-Maj7', 'D-Maj7', 'c#-min', 'B-Maj7']
-
-
-    # ToDo - I am looking for output like this from the algoritms.  This is just canned data.
-    # # I am guessing this might change.  -RTW
-
-    # frames = ["Frame-1.png", "Frame-2.png", "Frame-3.png", "Frame-4.png"]
-    # chords = ["A-Chord.png", "Gmaj7-Chord.png", "G-Chord.png", "Em7-Chord.png", "E7-Chord.png", "B7-Chord.png"]
-    # coords = [137, 300, 400, 640, 750, 910]
-
-    # This is the padding between frames and between the chord chart and the frame
-    # chordPad = 30
-    # framePad = 25
-    # chordWidth = 50
-    # chordHeight = 70
-
-    # Curser will be the Y-Row in the image at any time.
-    # cursorY = 0
-
-    # Create a new annotated image to display
-    # TODO - Get the cumulative width and height
-    # aImg = Image.new('RGB', size = (970, 1000), color = (255, 255, 255))
-
-    # Process and paste each frame into the annotated image:
-    # for frame in frames:
-    #     # Open the frame
-    #     frameImg = Image.open("./static/testframes/" + frame).convert('L')
-    #
-    #     # Paste the chords for this frame into annotated.png
-    #     cursorY += chordPad
-    #     for i in range(len(chords)):
-    #         # Open the chord image
-    #         chordImg = Image.open("./static/img/chords/" + chords[i]).convert('L')
-    #
-    #         # Paste the chord[i] at coords[i]
-    #         Image.Image.paste(aImg, chordImg, (coords[i], cursorY))
-    #
-    #         # Close the chord image
-    #         chordImg.close()
-    #
-    #     # Set the cursorY value
-    #     cursorY += (chordHeight + framePad)
-    #
-    #     # Paste the frame
-    #     Image.Image.paste(aImg, frameImg, (0, cursorY))
-    #
-    #     # Move the cursorY down the frame height
-    #     cursorY += frameImg.size[1]
-    #
-    #     # Close the frame
-    #     frameImg.close()
-    #
-    # # Resize and save the annotated image
-    # basewidth = 600
-    # wpercent = (basewidth/float(aImg.size[0]))
-    # hsize = int((float(aImg.size[1])*float(wpercent)))
-    # aImg = aImg.resize((basewidth, hsize), Image.ANTIALIAS)
-    #
-    # aImg.save("./static/img/downloads/annotated.png")
-#     return flag
-
