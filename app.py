@@ -7,7 +7,7 @@ from flask_mail import Message, Mail
 from tensorflow.python.framework import ops
 from tensorflow.python.training import saver as saver_lib
 from notes import build_model_input, get_chord_predictions
-from frames import partitionImage, resize, normalize#, label_frame_with_chords_images
+from frames import partitionImage, resize, normalize, isMusicalImage, createWhiteImage, getStartofBlack#, label_frame_with_chords_images
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 import tensorflow as tf
@@ -66,7 +66,7 @@ def allowed_image(filename):
 
 @app.route('/uploads/<filename>')
 def display_upload(filename):
-	return send_from_directory(app.config['IMAGE_UPLOADS'], filename)
+    return send_from_directory(app.config['IMAGE_UPLOADS'], filename)
 
 @app.route('/downloads/<download>')
 def display_download(download):
@@ -165,21 +165,63 @@ WIDTH_REDUCTION, HEIGHT = sess.run([width_reduction_tensor, height_tensor])
 
 decoded, _ = tf.nn.ctc_greedy_decoder(logits, seq_len)
 
+def resize_chord(img):
+    basewidth = 50
+    #wpercent = (basewidth/float(img.size[0]))
+    #hsize = int((float(aImg.size[1])*float(wpercent)))
+    img = img.resize((basewidth, 70), Image.ANTIALIAS)
+    return img
+
 def add_chord_label(image_to_convert, chords_list):
     img = image_to_convert
     img = Image.open(img).convert('L')
-    size = (img.size[0], int(img.size[1]*1.5))
+
+    # Grow the image height to make room for the chord image.
+    size = (img.size[0], int(img.size[1]+70))
     layer = Image.new('RGB', size, (255,255,255))
-    layer.paste(img, box=None)
-    img_arr = np.array(layer)
-    height = int(img_arr.shape[0])
-    width = int(img_arr.shape[1])
     draw = ImageDraw.Draw(layer)
-    font = ImageFont.truetype("Aaargh.ttf", 20)
-    j = width / 5
-    for i in chords_list:
-      draw.text((j, height-40), i, (0,0,0), font=font)
-      j+= (width / (len(chords_list) + 4))
+
+    # Flag "drawImage": set this to True to draw chord images, to False to draw text names
+    drawImage = True
+    if (drawImage) :
+        w, h = layer.size
+
+        # Kludge to get rid of some padding - TODO clean this up.
+        w -= 240
+        j = 120
+        for i in chords_list:
+            # Paste each chord image to the layer.
+            # dst.save(os.path.join(app.config["IMAGE_DOWNLOADS"], dst_name))
+
+            # If chord file exists, then draw it
+            if ( os.path.exists("./static/img/chords/" + str(i) + ".png") ) :
+                chord = Image.open("./static/img/chords/" + str(i) + ".png")
+                chord = resize_chord(chord)
+                chord.save("./static/img/chords/" + str(i) + ".png")
+                layer.paste(chord, ( j, 10 ))
+                j += int( w / len(chords_list) )
+                chord.close()
+
+            # Else draw the text of the chord name
+            else :
+                font = ImageFont.truetype("Aaargh.ttf", 20)
+                draw.text((j, 30), i, (0,0,0), font=font)
+                j += int( w / len(chords_list) )
+
+        # Paste the frame layer to the bottom of the image.
+        layer.paste(img, (0, 70))
+
+    else :
+        img_arr = np.array(layer)
+        height = int(img_arr.shape[0])
+        width = int(img_arr.shape[1])
+        draw = ImageDraw.Draw(layer)
+
+        font = ImageFont.truetype("Aaargh.ttf", 20)
+        j = width / 5
+        for i in chords_list:
+          draw.text((j, height-40), i, (0,0,0), font=font)
+          j+= (width / (len(chords_list) + 4))
 
     return layer
 
@@ -219,24 +261,25 @@ def predict():
     if request.method == 'POST':
         filename = request.form['preview-image']
         file_name_full_path = os.path.join(app.config["IMAGE_UPLOADS"], filename)
+
         image1 = Image.open(file_name_full_path).convert('L')
 
         #we assume the color at pixel 0,0 is the color of the background
         color = image1.getpixel((0,0))
         #horiz_images = trim(image1) # this splits the image horizontally, based on white lines
-        horiz_images = partitionImage(image1, color) # this splits the image horizontally, based on white lines
-        #// for practice, we save extracted images in the same directory as app.py
-        # NOTE ALSO< THAT AS THE CODE STANDS NOW, THE INPUT IMAGE MUST ALSO BE IN THE
-        #APP.PY directory. THE SPLITTING IS DONE AFTER YOU SELECT AND SUBMIT an IMAGE
+        horiz_images, white_images = partitionImage(image1, color) # this splits the image horizontally, based on white lines
+        # THE SPLITTING IS DONE AFTER YOU SELECT AND SUBMIT an IMAGE
         converted_array = []
         chords_dict = {}
         index = 0
         for i in horiz_images:
             fname = str(index) +".png"
             i.save(fname)
+            left, upper = getStartofBlack(i, color)
 
             # for i in range(index - 1):
             frame_image = Image.open(fname).convert('L')
+            #isMusic = isMusicalImage(frame_image)
             w, h = frame_image.size
             if w < 500 or h < 65:
                 converted_array.append(frame_image)
@@ -264,27 +307,40 @@ def predict():
         for c in converted_array:
             converted_height = converted_height + c.height
 
+        for w in white_images:
+            converted_height = converted_height + w.height
+
+
         combined_width = converted_array[0].width
         dst = Image.new('L', (combined_width, converted_height))
+
+        #this loop stictches back the parts, and saves the result
         h_index = 0
-        for c in converted_array: #this loop stictches back the parts, and saves the result
-      	    dst.paste(c, (0, h_index))
-      	    h_index = h_index + c.height
+        white_index = 0
+        for c in converted_array:
+            dst.paste(white_images[white_index], (0, h_index))
+            h_index = h_index + white_images[white_index].height
+            white_index = white_index + 1
+            dst.paste(c, (0, h_index))
+            h_index = h_index + c.height
 
         dst_name = "converted_" + filename
         dst.save(os.path.join(app.config["IMAGE_DOWNLOADS"], dst_name))
 
-        for n in range(index):
-            os.remove( str(n) + ".png" )
-            if ( os.path.exists(str(n) + "_converted.png") ):
-                os.remove( str(n) + "_converted.png" )
-            else:
-                None
+        # Flag "removeFiles" set this to True to cleanup after transcribing
+        removeFiles = True
+        if (removeFiles) :
+            for n in range(index):
+                os.remove( str(n) + ".png" )
+                if ( os.path.exists(str(n) + "_converted.png") ) :
+                    os.remove( str(n) + "_converted.png" )
+                else :
+                    None
 
-            if ( os.path.exists("chord_data/" + str(n) + ".csv") ):
-                os.remove("chord_data/" + str(n) + ".csv")
-            else:
-                None
+                if ( os.path.exists("chord_data/" + str(n) + ".csv") ):
+                    os.remove("chord_data/" + str(n) + ".csv")
+                else:
+                    None
 
         return render_template('annotated.html', download=dst_name)
 

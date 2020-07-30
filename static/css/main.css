@@ -95,7 +95,6 @@ ul a .list-group-item {
     -webkit-transition: 0.5s all;
     transition: 0.5s all;
     -moz-transition: 0.5s all;
-    width: 47%;
     cursor: pointer;
 }
 .download-btn:hover {
