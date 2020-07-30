@@ -7,7 +7,7 @@ from flask_mail import Message, Mail
 from tensorflow.python.framework import ops
 from tensorflow.python.training import saver as saver_lib
 from notes import build_model_input, get_chord_predictions
-from frames import partitionImage, resize, normalize#, label_frame_with_chords_images
+from frames import partitionImage, resize, normalize, isMusicalImage, createWhiteImage, getStartofBlack#, label_frame_with_chords_images
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 import tensorflow as tf
@@ -66,7 +66,7 @@ def allowed_image(filename):
 
 @app.route('/uploads/<filename>')
 def display_upload(filename):
-	return send_from_directory(app.config['IMAGE_UPLOADS'], filename)
+    return send_from_directory(app.config['IMAGE_UPLOADS'], filename)
 
 @app.route('/downloads/<download>')
 def display_download(download):
@@ -261,12 +261,13 @@ def predict():
     if request.method == 'POST':
         filename = request.form['preview-image']
         file_name_full_path = os.path.join(app.config["IMAGE_UPLOADS"], filename)
+
         image1 = Image.open(file_name_full_path).convert('L')
 
         #we assume the color at pixel 0,0 is the color of the background
         color = image1.getpixel((0,0))
         #horiz_images = trim(image1) # this splits the image horizontally, based on white lines
-        horiz_images = partitionImage(image1, color) # this splits the image horizontally, based on white lines
+        horiz_images, white_images = partitionImage(image1, color) # this splits the image horizontally, based on white lines
         #// for practice, we save extracted images in the same directory as app.py
         # NOTE ALSO< THAT AS THE CODE STANDS NOW, THE INPUT IMAGE MUST ALSO BE IN THE
         #APP.PY directory. THE SPLITTING IS DONE AFTER YOU SELECT AND SUBMIT an IMAGE
@@ -276,9 +277,12 @@ def predict():
         for i in horiz_images:
             fname = str(index) +".png"
             i.save(fname)
+            left, upper = getStartofBlack(i, color)
+            print ("black coordinates  = " + str(left) + ", " + str(upper))
 
             # for i in range(index - 1):
             frame_image = Image.open(fname).convert('L')
+            #isMusic = isMusicalImage(frame_image)
             w, h = frame_image.size
             if w < 500 or h < 65:
                 converted_array.append(frame_image)
@@ -305,15 +309,23 @@ def predict():
         converted_height = 0
         for c in converted_array:
             converted_height = converted_height + c.height
+            
+        for w in white_images:
+            converted_height = converted_height + w.height
+            
 
         combined_width = converted_array[0].width
         dst = Image.new('L', (combined_width, converted_height))
         
         #this loop stictches back the parts, and saves the result
         h_index = 0
+        white_index = 0
         for c in converted_array:
-      	    dst.paste(c, (0, h_index))
-      	    h_index = h_index + c.height
+            dst.paste(white_images[white_index], (0, h_index))
+            h_index = h_index + white_images[white_index].height
+            white_index = white_index + 1
+            dst.paste(c, (0, h_index))
+            h_index = h_index + c.height
 
         dst_name = "converted_" + filename
         dst.save(os.path.join(app.config["IMAGE_DOWNLOADS"], dst_name))
