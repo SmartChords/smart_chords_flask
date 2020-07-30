@@ -268,9 +268,7 @@ def predict():
         color = image1.getpixel((0,0))
         #horiz_images = trim(image1) # this splits the image horizontally, based on white lines
         horiz_images, white_images = partitionImage(image1, color) # this splits the image horizontally, based on white lines
-        #// for practice, we save extracted images in the same directory as app.py
-        # NOTE ALSO< THAT AS THE CODE STANDS NOW, THE INPUT IMAGE MUST ALSO BE IN THE
-        #APP.PY directory. THE SPLITTING IS DONE AFTER YOU SELECT AND SUBMIT an IMAGE
+        # THE SPLITTING IS DONE AFTER YOU SELECT AND SUBMIT an IMAGE
         converted_array = []
         chords_dict = {}
         index = 0
@@ -278,7 +276,6 @@ def predict():
             fname = str(index) +".png"
             i.save(fname)
             left, upper = getStartofBlack(i, color)
-            print ("black coordinates  = " + str(left) + ", " + str(upper))
 
             # for i in range(index - 1):
             frame_image = Image.open(fname).convert('L')
