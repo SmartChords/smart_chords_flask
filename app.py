@@ -180,6 +180,8 @@ def add_chord_label(image_to_convert, chords_list):
     size = (img.size[0], int(img.size[1]+90))
     layer = Image.new('RGB', size, (255,255,255))
     draw = ImageDraw.Draw(layer)
+    color = img.getpixel((0,0))
+    left, top = getStartofBlack(img, color)
     
     # Flag "drawImage": set this to True to draw chord images, to False to draw text names
     drawImage = True
@@ -187,8 +189,8 @@ def add_chord_label(image_to_convert, chords_list):
         w, h = layer.size
         
         # Kludge to get rid of some padding - TODO clean this up.
-        w -= 240
-        j = 120
+        w -= (left + 130) # 30 is a kludge experiment
+        j = left + 100
         for i in chords_list:
             # Paste each chord image to the layer.        
             # dst.save(os.path.join(app.config["IMAGE_DOWNLOADS"], dst_name))
